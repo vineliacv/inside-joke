@@ -55,16 +55,25 @@
 }
 
 .top-actions{display:flex;align-items:center;justify-content:flex-end;gap:12px}
+.music-toggle{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:44px;padding:7px 12px;border:1px solid #7af5ed73;border-radius:12px;background:#21183d;color:#e3dcef;font-size:.86rem;font-weight:800;white-space:nowrap}
+.music-toggle[aria-pressed="true"]{border-color:#7af5ed;background:#173e4b;color:#b6fffa}
+.music-toggle:hover{background:#284859}
+.music-toggle>span:first-child{font-size:1.25rem;line-height:1}
 .language-switch{display:inline-flex;align-items:center;gap:3px;padding:4px;border:1px solid #7af5ed73;border-radius:12px;background:#21183d}
 .language-switch button{min-height:36px;padding:7px 11px;border:0;border-radius:9px;background:transparent;color:#e3dcef;font-size:.86rem;font-weight:800}
 .language-switch button.active{background:#7af5ed;color:#102039}
 .language-switch button:hover:not(.active){background:#7af5ed20}
 @media(max-width:760px){
   .top-actions .pill{display:none}
+  .music-label{display:none}
   .language-switch button{min-height:39px;padding:8px 10px;font-size:.83rem}
 }
-@media(max-width:380px){
+@media(max-width:420px){
   .brand{gap:7px;font-size:1.05rem}
+  .top{gap:8px}
+  .top-actions{gap:6px}
+  .brand-logo{width:92px;height:54px}
+  .music-toggle{min-width:44px;padding:7px}
   .language-switch button{padding:7px 8px;font-size:.78rem}
 }
 
