@@ -53,3 +53,17 @@
   .stage h1{font-size:clamp(1.9rem,8.5vw,2.4rem)}
   .option{min-height:58px;padding:14px 16px}
 }
+
+.top-actions{display:flex;align-items:center;justify-content:flex-end;gap:12px}
+.language-switch{display:inline-flex;align-items:center;gap:3px;padding:4px;border:1px solid #7af5ed73;border-radius:12px;background:#21183d}
+.language-switch button{min-height:36px;padding:7px 11px;border:0;border-radius:9px;background:transparent;color:#e3dcef;font-size:.86rem;font-weight:800}
+.language-switch button.active{background:#7af5ed;color:#102039}
+.language-switch button:hover:not(.active){background:#7af5ed20}
+@media(max-width:760px){
+  .top-actions .pill{display:none}
+  .language-switch button{min-height:39px;padding:8px 10px;font-size:.83rem}
+}
+@media(max-width:380px){
+  .brand{gap:7px;font-size:1.05rem}
+  .language-switch button{padding:7px 8px;font-size:.78rem}
+}
