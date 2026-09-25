@@ -127,7 +127,7 @@ body{background:radial-gradient(ellipse 38rem 28rem at 5% 0%,#fb4fa026,transpare
 .round-meter{height:9px;margin-top:20px;background:#0f0d2e;box-shadow:inset 0 1px 4px #04020e}
 .round-meter span{box-shadow:0 0 16px #7af5ed9c}
 .options{gap:13px}
-.option{display:flex;align-items:center;gap:16px;min-height:72px;padding:13px 18px;border-color:#9482b6b8;background:linear-gradient(100deg,#3b2b61,#31264d);font-size:1.02rem;box-shadow:inset 0 1px #ffffff12,0 7px 20px #0c082438}
+.option{display:flex;align-items:center;justify-content:flex-start;gap:16px;min-height:72px;padding:13px 18px;border-color:#9482b6b8;background:linear-gradient(100deg,#3b2b61,#31264d);font-size:1.02rem;box-shadow:inset 0 1px #ffffff12,0 7px 20px #0c082438}
 .option:hover:not(:disabled),.option:focus-visible{border-color:#7af5ed;background:#284e5e;box-shadow:0 0 0 2px #7af5ed28,0 10px 26px #08041e66}
 .option-letter{flex:0 0 38px;display:grid;place-items:center;width:38px;height:38px;border:1px solid #bba9e5a1;border-radius:11px;background:#211835;color:#bafff9;font-size:.95rem;font-weight:900}
 .option:hover .option-letter{border-color:#7af5ed;background:#7af5ed28}
@@ -168,3 +168,9 @@ body{background:radial-gradient(ellipse 38rem 28rem at 5% 0%,#fb4fa026,transpare
 @keyframes sticker-pop{from{opacity:0;transform:scale(.7) rotate(-10deg)}to{opacity:1;transform:scale(1) rotate(9deg)}}
 @media(max-width:760px){.stage>.stage-sticker{top:20px;right:20px;width:54px;height:54px;border-radius:17px;font-size:1.9rem}.stage .status{max-width:calc(100% - 70px)}}
 @media(prefers-reduced-motion:reduce){.stage-sticker{animation:none}}
+.role-label .avatar.turn-avatar{flex:0 0 68px;width:68px;height:68px;border:2px solid #7af5ed;border-radius:22px;background:linear-gradient(145deg,#7af5ed3b,#ff5cac39);font-size:2.65rem;box-shadow:0 0 0 6px #7af5ed18,0 10px 26px #09051f90;animation:avatar-entrance .65s cubic-bezier(.2,1.5,.35,1) both,avatar-dance 1.1s ease-in-out .7s 2 alternate}
+.phase-choice .turn-avatar,.phase-mini .turn-avatar{border-color:#ff98cf!important;box-shadow:0 0 0 6px #ff5cac22,0 10px 26px #09051f90!important}
+@keyframes avatar-entrance{from{opacity:.4;transform:scale(.55) rotate(-17deg)}to{opacity:1;transform:scale(1) rotate(0deg)}}
+@keyframes avatar-dance{from{transform:translateY(0) rotate(-7deg)}to{transform:translateY(-8px) rotate(7deg)}}
+@media(max-width:420px){.role-label .avatar.turn-avatar{flex-basis:56px;width:56px;height:56px;border-radius:18px;font-size:2.15rem}}
+@media(prefers-reduced-motion:reduce){.role-label .avatar.turn-avatar{animation:none}}
