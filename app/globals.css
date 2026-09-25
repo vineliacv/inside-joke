@@ -174,3 +174,31 @@ body{background:radial-gradient(ellipse 38rem 28rem at 5% 0%,#fb4fa026,transpare
 @keyframes avatar-dance{from{transform:translateY(0) rotate(-7deg)}to{transform:translateY(-8px) rotate(7deg)}}
 @media(max-width:420px){.role-label .avatar.turn-avatar{flex-basis:56px;width:56px;height:56px;border-radius:18px;font-size:2.15rem}}
 @media(prefers-reduced-motion:reduce){.role-label .avatar.turn-avatar{animation:none}}
+.avatar-art{display:block;width:100%;height:100%;object-fit:contain;pointer-events:none;user-select:none}
+.avatar-choice{overflow:hidden}
+.avatar-choices{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.avatar-choice{min-height:64px}
+.avatar-choice .avatar-art{width:60px;height:60px}
+.lobby-avatar .avatar-art{width:39px;height:39px}
+.person .avatar{overflow:hidden}
+.person .avatar-art{width:34px;height:34px}
+.victory-avatar .avatar-art{width:100%;height:100%;padding:7px;animation:character-wiggle 2.5s ease-in-out 2}
+.role-label .avatar.turn-avatar{flex:0 0 96px;width:96px;height:96px;border-radius:26px;padding:4px;animation:avatar-entrance .6s cubic-bezier(.2,1.5,.35,1) both}
+.turn-avatar .avatar-art{transform-origin:50% 78%;animation:character-wiggle 2.4s ease-in-out .6s 2}
+.turn-avatar.avatar-0 .avatar-art{animation-name:character-walk}
+.turn-avatar.avatar-5 .avatar-art{animation-name:character-stomp}
+.turn-avatar.avatar-2 .avatar-art{animation-name:character-hop}
+.turn-avatar.avatar-3 .avatar-art{animation-name:character-prance}
+.turn-avatar.avatar-4 .avatar-art{animation-name:character-sway}
+.turn-avatar.avatar-6 .avatar-art{animation-name:character-waddle}
+.turn-avatar.avatar-7 .avatar-art{animation-name:character-flutter}
+@keyframes character-wiggle{0%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(-7px) rotate(-9deg)}55%{transform:translateY(0) rotate(8deg)}75%{transform:translateY(-4px) rotate(-5deg)}}
+@keyframes character-walk{0%,100%{transform:translate(0,0) rotate(0)}25%{transform:translate(9px,-7px) rotate(8deg)}50%{transform:translate(0,0) rotate(0)}75%{transform:translate(-9px,-7px) rotate(-8deg)}}
+@keyframes character-stomp{0%,100%{transform:translateY(0) rotate(0)}20%{transform:translate(7px,-11px) rotate(11deg)}35%{transform:translate(10px,2px) rotate(-6deg)}60%{transform:translate(-6px,-8px) rotate(-10deg)}76%{transform:translate(-8px,2px) rotate(6deg)}}
+@keyframes character-hop{0%,100%{transform:translateY(0) scale(1)}20%{transform:translateY(3px) scale(1.08,.9)}45%{transform:translateY(-17px) scale(.95,1.06)}70%{transform:translateY(0) scale(1.08,.9)}}
+@keyframes character-prance{0%,100%{transform:translate(0,0) rotate(0)}30%{transform:translate(8px,-10px) rotate(10deg)}65%{transform:translate(-7px,-5px) rotate(-8deg)}}
+@keyframes character-sway{0%,100%{transform:rotate(0) scale(1)}25%{transform:rotate(13deg) scale(1.04)}65%{transform:rotate(-13deg) scale(.97)}}
+@keyframes character-waddle{0%,100%{transform:translateX(0) rotate(0)}25%{transform:translateX(8px) rotate(12deg)}75%{transform:translateX(-8px) rotate(-12deg)}}
+@keyframes character-flutter{0%,100%{transform:translateY(0) scale(1)}30%{transform:translateY(-13px) scale(.92,1.05) rotate(-6deg)}60%{transform:translateY(-6px) scale(1.08,.96) rotate(7deg)}}
+@media(max-width:420px){.role-label .avatar.turn-avatar{flex-basis:80px;width:80px;height:80px;border-radius:22px}.avatar-choice{min-height:55px}.avatar-choice .avatar-art{width:52px;height:52px}}
+@media(prefers-reduced-motion:reduce){.turn-avatar .avatar-art,.victory-avatar .avatar-art{animation:none}}

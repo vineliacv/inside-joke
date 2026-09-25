@@ -19,6 +19,9 @@ const storeKey = 'inside-joke-session';
 const languageKey = 'inside-joke-language';
 const avatarKey = 'inside-joke-avatar';
 const phaseStickers: Record<string, string> = { lobby: '🎉', answer: '🎤', guess: '🔮', reveal: '👀', choice: '🎲', mini: '⭐', finished: '🏆' };
+const avatarImages = ['/avatars/fox.webp', '/avatars/panda.webp', '/avatars/frog.webp', '/avatars/unicorn.webp', '/avatars/octopus.webp', '/avatars/tiger.webp', '/avatars/penguin.webp', '/avatars/butterfly.webp'];
+function avatarIndex(value?: string) { const index = AVATARS.indexOf((value ?? DEFAULT_AVATAR) as typeof AVATARS[number]); return index < 0 ? 0 : index; }
+function AvatarArt({ value }: { value?: string }) { return <img className="avatar-art" src={avatarImages[avatarIndex(value)]} alt="" aria-hidden="true" draggable={false} />; }
 
 export default function Home() {
   const [session, setSession] = useState<Session | null>(null);
@@ -165,7 +168,7 @@ export default function Home() {
         <Input id="name" className="input" maxLength={24} value={name} onChange={e => setName(e.target.value)} placeholder={t('namePlaceholder')}/>
         <fieldset className="avatar-picker">
           <legend className="field">{t('chooseAvatar')}</legend>
-          <div className="avatar-choices">{AVATARS.map((choice, index) => <button key={choice} type="button" className={avatar === choice ? 'avatar-choice selected' : 'avatar-choice'} aria-pressed={avatar === choice} aria-label={`${t('avatar')} ${index + 1}: ${choice}`} onClick={() => chooseAvatar(choice)}>{choice}</button>)}</div>
+          <div className="avatar-choices">{AVATARS.map((choice, index) => <button key={choice} type="button" className={avatar === choice ? 'avatar-choice selected' : 'avatar-choice'} aria-pressed={avatar === choice} aria-label={`${t('avatar')} ${index + 1}: ${choice}`} onClick={() => chooseAvatar(choice)}><AvatarArt value={choice}/></button>)}</div>
         </fieldset>
         {entryMode === 'join' && <><label className="field" htmlFor="code">{t('roomCodeJoin')}</label>
         <Input id="code" className="input" maxLength={5} autoCapitalize="characters" value={roomCode} onChange={e => {
@@ -213,7 +216,7 @@ export default function Home() {
             <p>{t('shareCode')} <strong>{game.code}</strong>. {t('needTwo')}</p>
             <div className="notice">{game.players.length} {t('of')} 8 {t('joined')}</div>
             <div className="lobby-players" aria-label={t('scoreboard')}>
-              {game.players.map(p => <div className="lobby-player" key={p.id}><span className="lobby-avatar" aria-hidden="true">{p.avatar ?? DEFAULT_AVATAR}</span><span>{p.name}</span></div>)}
+              {game.players.map(p => <div className="lobby-player" key={p.id}><span className="lobby-avatar" aria-hidden="true"><AvatarArt value={p.avatar}/></span><span>{p.name}</span></div>)}
             </div>
             <div className="round-settings">
               <label className="field" htmlFor={session.me === game.host ? 'total-rounds' : undefined}>{t('totalRounds')}</label>
@@ -225,7 +228,7 @@ export default function Home() {
           </>}
 
           {game.phase === 'answer' && question && <>
-            <p className="eyebrow role-label"><span className="avatar emoji turn-avatar" aria-hidden="true">{spot?.avatar ?? DEFAULT_AVATAR}</span>{isSpot ? t('yourSpotlight') : `${spot?.name} ${t('spotlight')}`}</p>
+            <p className="eyebrow role-label"><span className={`avatar turn-avatar avatar-${avatarIndex(spot?.avatar)}`} aria-hidden="true"><AvatarArt value={spot?.avatar}/></span>{isSpot ? t('yourSpotlight') : `${spot?.name} ${t('spotlight')}`}</p>
             <h1>{question.q}</h1>
             {isSpot ? <>
               <p>{t('choosePrivate')}</p>
@@ -234,7 +237,7 @@ export default function Home() {
           </>}
 
           {game.phase === 'guess' && question && <>
-            <p className="eyebrow role-label"><span className="avatar emoji turn-avatar" aria-hidden="true">{spot?.avatar ?? DEFAULT_AVATAR}</span>{t('guessTime')} · {spot?.name}</p>
+            <p className="eyebrow role-label"><span className={`avatar turn-avatar avatar-${avatarIndex(spot?.avatar)}`} aria-hidden="true"><AvatarArt value={spot?.avatar}/></span>{t('guessTime')} · {spot?.name}</p>
             <h1>{question.q}</h1>
             {isSpot ? <p>{t('answerLocked')} {game.guessed.length} {t('of')} {game.players.length - 1} {t('friendsGuessed')}</p>
               : game.myGuess !== null ? <div className="notice">{t('guessLocked')} <strong>{question.a[game.myGuess]}</strong><p>{game.guessed.length} {t('of')} {game.players.length - 1} {t('guessesIn')}</p></div>
@@ -243,16 +246,16 @@ export default function Home() {
           </>}
 
           {game.phase === 'reveal' && question && <>
-            <p className="eyebrow role-label"><span className="avatar emoji turn-avatar" aria-hidden="true">{spot?.avatar ?? DEFAULT_AVATAR}</span>{t('reveal')}</p>
+            <p className="eyebrow role-label"><span className={`avatar turn-avatar avatar-${avatarIndex(spot?.avatar)}`} aria-hidden="true"><AvatarArt value={spot?.avatar}/></span>{t('reveal')}</p>
             <h1>{spot?.name} {t('chose')}</h1>
             <h2 className="winner">{question.a[game.answer ?? 0]}</h2>
             <div className="notice">{winner?.name} {t('winsRound')} {chosen?.name} {t('nextChoice')}</div>
-            <div className="scorelist">{game.players.map(p => <div className="person" key={p.id}><span className="avatar emoji" aria-hidden="true">{p.avatar ?? DEFAULT_AVATAR}</span>{p.name}<span className="points">+{game.earned[p.id] || 0}</span></div>)}</div>
+            <div className="scorelist">{game.players.map(p => <div className="person" key={p.id}><span className="avatar" aria-hidden="true"><AvatarArt value={p.avatar}/></span>{p.name}<span className="points">+{game.earned[p.id] || 0}</span></div>)}</div>
             <Button className="btn" disabled={busy} onClick={() => act('revealNext')}>{t('continue')}</Button>
           </>}
 
           {game.phase === 'choice' && <>
-            <p className="eyebrow role-label"><span className="avatar emoji turn-avatar" aria-hidden="true">{chosen?.avatar ?? DEFAULT_AVATAR}</span>{t('yourCall')} {chosen?.name}</p>
+            <p className="eyebrow role-label"><span className={`avatar turn-avatar avatar-${avatarIndex(chosen?.avatar)}`} aria-hidden="true"><AvatarArt value={chosen?.avatar}/></span>{t('yourCall')} {chosen?.name}</p>
             <h1>{t('regularOrBonus')}</h1>
             <p>{chosen?.name} {t('chosenRandom')}</p>
             {isChosen ? <div className="options">
@@ -262,7 +265,7 @@ export default function Home() {
           </>}
 
           {game.phase === 'mini' && <>
-            <p className="eyebrow role-label"><span className="avatar emoji turn-avatar" aria-hidden="true">{chosen?.avatar ?? DEFAULT_AVATAR}</span>{t('bonus')} · {chosen?.name}</p>
+            <p className="eyebrow role-label"><span className={`avatar turn-avatar avatar-${avatarIndex(chosen?.avatar)}`} aria-hidden="true"><AvatarArt value={chosen?.avatar}/></span>{t('bonus')} · {chosen?.name}</p>
             {game.miniKind === 'puzzle' ? <>
               <h1>{t('quickPuzzle')}</h1><p>{t('numberNext')}</p>
               {isChosen && !game.miniDone ? <div className="options">{['18', '24', '32', '64'].map((v, i) => <Button className="option" key={v} disabled={busy} onClick={() => act('miniAnswer', { value: i })}>{v}</Button>)}</div>
@@ -280,7 +283,7 @@ export default function Home() {
             <p className="eyebrow">{t('finalScores')}</p>
             <h1>{t('wrap')}</h1>
             <div className="victory" aria-label={finalWinners.map(p => p.name).join(' & ')}>
-              <div className="victory-avatars">{finalWinners.map(p => <span className="victory-avatar" key={p.id} aria-hidden="true">{p.avatar ?? DEFAULT_AVATAR}</span>)}</div>
+              <div className="victory-avatars">{finalWinners.map(p => <span className="victory-avatar" key={p.id} aria-hidden="true"><AvatarArt value={p.avatar}/></span>)}</div>
               <p className="victory-message">{finalWinners.length === 1 ? t('congratulations') : t('congratulationsTie')}</p>
               <h2 className="winner">{locale === 'es' ? '¡' : ''}{finalWinners.map(p => p.name).join(' & ')} {finalWinners.length === 1 ? t('wins') : t('tie')}</h2>
             </div>
@@ -291,7 +294,7 @@ export default function Home() {
         </main>
         <aside className="panel scoreboard">
           <div className="eyebrow">{t('scoreboard')} · {game.players.length} {game.players.length === 1 ? t('player') : t('players')}</div>
-          <div className="scorelist">{[...game.players].sort((a, b) => b.score - a.score).map((p, index) => <div className={`person ${index === 0 ? 'leader' : ''}`} key={p.id}><span className="rank" aria-hidden="true">{index + 1}</span><span className="avatar emoji" aria-hidden="true">{p.avatar ?? DEFAULT_AVATAR}</span><span>{p.name}{p.id === session.me ? ` (${t('you')})` : ''}</span><span className="points">{p.score}</span></div>)}</div>
+          <div className="scorelist">{[...game.players].sort((a, b) => b.score - a.score).map((p, index) => <div className={`person ${index === 0 ? 'leader' : ''}`} key={p.id}><span className="rank" aria-hidden="true">{index + 1}</span><span className="avatar" aria-hidden="true"><AvatarArt value={p.avatar}/></span><span>{p.name}{p.id === session.me ? ` (${t('you')})` : ''}</span><span className="points">{p.score}</span></div>)}</div>
           <hr className="divider"/><p className="small">{t('scoring')}</p>
         </aside>
       </div>

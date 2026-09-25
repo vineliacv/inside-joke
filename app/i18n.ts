@@ -163,7 +163,7 @@ export const messages = {
     continue: 'Continuar',
     yourCall: 'Tú decides,',
     regularOrBonus: '¿Ir a lo seguro o armar un poquito de lío?',
-    chosenRandom: 'fue elegido al azar entre quienes no ganaron esta ronda.',
+    chosenRandom: 'salió en el sorteo entre quienes no ganaron esta ronda.',
     tryMini: 'Jugar un minijuego · ganar 2 puntos',
     regular: 'Seguir con las rondas',
     waitDecision: 'Esperando a que',
