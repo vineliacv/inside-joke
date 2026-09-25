@@ -15,7 +15,7 @@ type Game = {
   hasAnswered: boolean; guessed: string[]; myGuess: number | null; earned: Record<string, number>;
   winner: string | null; chosen: string | null; miniKind: string | null;
   miniIndex: number | null; miniDone: boolean; miniChallenge: BonusChallenge | null;
-  miniOptionsOrder: number[]; miniStartAt: number; miniAnswered: string[]; miniWinner: string | null; serverTime: number;
+  miniOptionsOrder: number[]; miniStartAt: number; miniEndAt: number; miniAnswered: string[]; miniWinner: string | null; serverTime: number;
 };
 type Session = { code: string; token: string; me: string };
 const storeKey = 'inside-joke-session';
@@ -212,9 +212,10 @@ export default function Home() {
         await navigator.share({ title: 'Inside Joke', text: message, url: link });
         return;
       } catch (e) {
+        sessionStorage.removeItem(sharingKey);
         if (e instanceof DOMException && e.name === 'AbortError') return;
       } finally {
-        sessionStorage.removeItem(sharingKey);
+        window.setTimeout(() => sessionStorage.removeItem(sharingKey), 120000);
       }
     }
     try {
@@ -234,6 +235,7 @@ export default function Home() {
   const isChosen = me?.id === chosen?.id;
   const miniWinner = game?.players.find(x => x.id === game.miniWinner);
   const bonusCountdown = game?.phase === 'mini' ? Math.max(0, Math.ceil((game.miniStartAt - now - clockOffset) / 1000)) : 0;
+  const bonusTimeLeft = game?.phase === 'mini' ? Math.max(0, Math.ceil((game.miniEndAt - now - clockOffset) / 1000)) : 0;
   const canMiniAnswer = game?.phase === 'mini' && bonusCountdown === 0 && !game.miniDone && !game.miniAnswered.includes(session?.me ?? '');
   const question = game ? localizeQuestion(game.question, locale) : null;
   const showError = error && <p className="error" role="alert">{localizeError(error, locale)}</p>;
@@ -299,6 +301,7 @@ export default function Home() {
           setSavedSession(session);
           setSession(null);
           setGame(null);
+          sessionStorage.removeItem(sharingKey);
           setInvitedRoom('');
           setEntryMode('create');
           history.replaceState(null, '', '/');
@@ -307,13 +310,13 @@ export default function Home() {
             await navigator.clipboard.writeText(game.code);
             setCopiedCode(true);
             setTimeout(() => setCopiedCode(false), 2200);
-          } catch {}
+          } catch { setError('Please try again'); }
         }}>{copiedCode ? t('copiedCode') : t('copyCode')}</Button><Button className="btn ghost" onClick={async () => {
           try {
             await navigator.clipboard.writeText(`${location.origin}/?room=${game.code}&v=${Date.now()}`);
             setCopied(true);
             setTimeout(() => setCopied(false), 2200);
-          } catch {}
+          } catch { setError('Please try again'); }
         }}>{copied ? t('copiedLink') : t('copyLink')}</Button></div>
       </div>
       <div className="grid">
@@ -377,6 +380,7 @@ export default function Home() {
 
           {game.phase === 'mini' && <>
             <p className="eyebrow role-label"><span className={`avatar turn-avatar avatar-${avatarIndex(chosen?.avatar)}`} aria-hidden="true"><AvatarArt value={chosen?.avatar}/></span>{t('bonus')} · {t('everyonePlays')}</p>
+            {bonusCountdown === 0 && !game.miniDone && <p className="status" role="timer">{bonusTimeLeft} {t('secondsLeft')}</p>}
             {bonusCountdown > 0 ? <div className="bonus-countdown" role="status"><p>{t('sameChallenge')}</p><strong>{bonusCountdown}</strong><span>{t('getReady')}</span></div> : game.miniChallenge?.kind === 'quiz' ? <>
               <h1>{game.miniChallenge.prompt[locale]}</h1><p>{t('fastestWins')}</p>
               <div className="options">{game.miniOptionsOrder.map((index, position) => <Button className="option" key={index} disabled={!canMiniAnswer || busy} onClick={() => act('miniAnswer', { value: index })}><span className="option-letter" aria-hidden="true">{String.fromCharCode(65 + position)}</span><span>{game.miniChallenge?.kind === 'quiz' ? game.miniChallenge.answers[locale][index] : ''}</span></Button>)}</div>
@@ -405,7 +409,7 @@ export default function Home() {
             {isFinalWinner && <p className="share-hint">{t('facebookShareHint')}</p>}
             <Button className="btn ghost finished-share" onClick={() => share('game')}>{shareFeedback === 'game' ? t('gameCopied') : t('shareGame')}</Button>
             <p>{t('roundsPlayed')}: {game.total}</p>
-            <Button className="btn alt" onClick={() => { localStorage.removeItem(storeKey); setSession(null); setSavedSession(null); setGame(null); history.replaceState(null, '', '/'); }}>{t('newRoom')}</Button>
+            <Button className="btn alt" onClick={() => { localStorage.removeItem(storeKey); sessionStorage.removeItem(sharingKey); setSession(null); setSavedSession(null); setGame(null); history.replaceState(null, '', '/'); }}>{t('newRoom')}</Button>
           </>}
           {showError}
         </main>
