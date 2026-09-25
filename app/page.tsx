@@ -21,6 +21,7 @@ const avatarKey = 'inside-joke-avatar';
 
 export default function Home() {
   const [session, setSession] = useState<Session | null>(null);
+  const [savedSession, setSavedSession] = useState<Session | null>(null);
   const [game, setGame] = useState<Game | null>(null);
   const [name, setName] = useState('');
   const [roomCode, setRoomCode] = useState('');
@@ -37,7 +38,7 @@ export default function Home() {
       const d = await r.json() as { game: Game; error?: string };
       if (r.ok) { setGame(d.game); setError(''); }
       else if (r.status === 403 || r.status === 404) {
-        setSession(null); setGame(null); localStorage.removeItem(storeKey);
+        setSession(null); setSavedSession(null); setGame(null); localStorage.removeItem(storeKey);
       }
     } catch {}
   }, []);
@@ -52,7 +53,7 @@ export default function Home() {
     if (savedAvatar && AVATARS.some(item => item === savedAvatar)) setAvatar(savedAvatar);
     const saved = localStorage.getItem(storeKey);
     if (saved) {
-      try { const s = JSON.parse(saved) as Session; setSession(s); refresh(s); }
+      try { const s = JSON.parse(saved) as Session; if (s.code && s.token && s.me) setSavedSession(s); else localStorage.removeItem(storeKey); }
       catch { localStorage.removeItem(storeKey); }
     }
     const code = new URLSearchParams(location.search).get('room');
@@ -89,6 +90,7 @@ export default function Home() {
       if (action === 'create' || action === 'join') {
         const s = { code: d.code, token: d.token, me: d.me };
         setSession(s);
+        setSavedSession(s);
         localStorage.setItem(storeKey, JSON.stringify(s));
         history.replaceState(null, '', `/?room=${d.code}`);
       }
@@ -130,6 +132,11 @@ export default function Home() {
       <div className="joinbox">
         <div className="form-kicker">{t('startPlaying')}</div>
         <h2>{t('createOrJoin')}</h2>
+        {savedSession && <Button className="btn ghost resume-room" onClick={() => {
+          setSession(savedSession);
+          history.replaceState(null, '', `/?room=${savedSession.code}`);
+          refresh(savedSession);
+        }}>{t('resumeRoom')} {savedSession.code}</Button>}
         <label className="field" htmlFor="name">{t('yourName')}</label>
         <Input id="name" className="input" maxLength={24} value={name} onChange={e => setName(e.target.value)} placeholder={t('namePlaceholder')}/>
         <fieldset className="avatar-picker">
@@ -148,13 +155,18 @@ export default function Home() {
     </div> : <>
       <div className="roomhead">
         <div><div className="eyebrow">{t('roomCode')}</div><div className="code">{game.code}</div></div>
-        <Button className="btn ghost" onClick={async () => {
+        <div className="roomhead-actions"><Button className="btn alt" onClick={() => {
+          setSavedSession(session);
+          setSession(null);
+          setGame(null);
+          history.replaceState(null, '', '/');
+        }}>{t('viewHome')}</Button><Button className="btn ghost" onClick={async () => {
           try {
             await navigator.clipboard.writeText(`${location.origin}/?room=${game.code}`);
             setCopied(true);
             setTimeout(() => setCopied(false), 2200);
           } catch {}
-        }}>{copied ? t('copiedLink') : t('copyLink')}</Button>
+        }}>{copied ? t('copiedLink') : t('copyLink')}</Button></div>
       </div>
       <div className="grid">
         <main className="panel stage">
@@ -236,7 +248,7 @@ export default function Home() {
               <h2 className="winner">{locale === 'es' ? '¡' : ''}{finalWinners.map(p => p.name).join(' & ')} {finalWinners.length === 1 ? t('wins') : t('tie')}</h2>
             </div>
             <p>{t('everyonePlayed')}</p>
-            <Button className="btn alt" onClick={() => { localStorage.removeItem(storeKey); setSession(null); setGame(null); history.replaceState(null, '', '/'); }}>{t('newRoom')}</Button>
+            <Button className="btn alt" onClick={() => { localStorage.removeItem(storeKey); setSession(null); setSavedSession(null); setGame(null); history.replaceState(null, '', '/'); }}>{t('newRoom')}</Button>
           </>}
           {showError}
         </main>
