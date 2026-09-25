@@ -83,7 +83,7 @@ export default function Home() {
         const s = JSON.parse(saved) as Session;
         if (s.code && s.token && s.me) {
           setSavedSession(s);
-          if (!code || code === s.code) {
+          if (code === s.code) {
             setSession(s);
             void refresh(s);
           }
