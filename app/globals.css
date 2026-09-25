@@ -236,4 +236,7 @@ body{background:radial-gradient(ellipse 38rem 28rem at 5% 0%,#fb4fa026,transpare
 .bonus-countdown span{font-weight:800;color:#ffb4d9}
 .phase-mini .notice .avatar{display:inline-grid;vertical-align:middle;margin-right:5px}
 .finished-share{margin-bottom:8px}
+.site-credit{margin:36px auto 0;padding:18px 4px 0;border-top:1px solid #7af5ed45;text-align:center;color:#d4cde4;font-size:.875rem;line-height:1.5}
+.site-credit a{color:#b6fffa;text-decoration:underline;text-underline-offset:3px}
+.site-credit a:focus-visible{outline:2px solid #7af5ed;outline-offset:4px}
 @media(max-width:420px){.landing-share{width:100%}.share-actions .btn{flex-basis:100%}.finished-share{width:100%}}
