@@ -67,3 +67,16 @@
   .brand{gap:7px;font-size:1.05rem}
   .language-switch button{padding:7px 8px;font-size:.78rem}
 }
+
+.avatar-picker{min-width:0;margin:0 0 17px;padding:0;border:0}
+.avatar-picker legend{padding:0}
+.avatar-choices{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px}
+.avatar-choice{display:grid;place-items:center;min-width:0;min-height:47px;padding:3px;border:1px solid #84719f;border-radius:12px;background:#35284f;font-size:1.42rem;line-height:1}
+.avatar-choice:hover{border-color:#7af5ed;background:#284859}
+.avatar-choice.selected{border:2px solid #7af5ed;background:#284859;box-shadow:0 0 0 2px #7af5ed28}
+.avatar.emoji{font-size:1.25rem;line-height:1;background:#5a3d78}
+.role-label{display:flex;align-items:center;gap:10px}
+@media(max-width:420px){
+  .avatar-choices{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+  .avatar-choice{min-height:49px;font-size:1.55rem}
+}
