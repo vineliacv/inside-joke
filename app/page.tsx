@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { localizeError, localizeQuestion, messages, type Locale, type MessageKey } from './i18n';
 import { AVATARS, DEFAULT_AVATAR } from '@/lib/avatars';
+import { useGameMusic } from './use-game-music';
 
 type Player = { id: string; name: string; score: number; avatar?: string };
 type BonusChallenge = { kind: 'quiz'; prompt: { en: string; es: string }; answers: { en: string[]; es: string[] } } | { kind: 'search'; prompt: { en: string; es: string }; target: string; fillers: string[] };
@@ -44,6 +45,7 @@ export default function Home() {
   const [shareFeedback, setShareFeedback] = useState<'game' | 'victory' | null>(null);
   const [clockOffset, setClockOffset] = useState(0);
   const [now, setNow] = useState(() => Date.now());
+  const music = useGameMusic();
   const refreshInFlight = useRef(false);
   const gameUpdate = useRef(0);
   const t = (key: MessageKey) => messages[locale][key];
@@ -213,6 +215,9 @@ export default function Home() {
       {session && game && <div className="brand"><img className="brand-logo" src="/inside-joke-logo.webp" alt="Inside Joke" /></div>}
       <div className="top-actions">
         <span className="pill">{t('tagline')}</span>
+        <button type="button" className="music-toggle" aria-pressed={music.enabled} onClick={music.toggle} aria-label={music.enabled ? t('musicOff') : t('musicOn')} title={music.enabled ? t('musicOff') : t('musicOn')}>
+          <span aria-hidden="true">{music.enabled ? '♫' : '♪'}</span><span className="music-label">{music.enabled ? t('musicOff') : t('musicOn')}</span>
+        </button>
         <div className="language-switch" role="group" aria-label={locale === 'es' ? 'Idioma' : 'Language'}>
           <button type="button" lang="es" aria-pressed={locale === 'es'} className={locale === 'es' ? 'active' : ''} onClick={() => changeLanguage('es')}>Español</button>
           <button type="button" lang="en" aria-pressed={locale === 'en'} className={locale === 'en' ? 'active' : ''} onClick={() => changeLanguage('en')}>English</button>
