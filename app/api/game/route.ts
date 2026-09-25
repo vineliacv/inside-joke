@@ -4,18 +4,18 @@ export const runtime = 'edge';
 type Player={id:string;token:string;name:string;score:number;avatar?:string};
 type Game={code:string;host:string;players:Player[];phase:'lobby'|'answer'|'guess'|'reveal'|'choice'|'mini'|'finished';round:number;totalRounds?:number;roundsPerPlayer?:number;question:number;answer:number|null;guesses:Record<string,number>;earned:Record<string,number>;winner:string|null;chosen:string|null;miniKind:'puzzle'|'object'|null;miniIndex:number;miniDone:boolean};
 const QUESTIONS=[
- {q:'Your dream free Saturday looks like…',a:['A spontaneous road trip','Staying in with a movie','A big meal with friends','Trying a new hobby']},
- {q:'Which superpower would you actually pick?',a:['Teleportation','Reading minds','Stopping time','Talking to animals']},
- {q:'You find a plane ticket to anywhere. Where first?',a:['A tropical beach','A mountain cabin','A bustling city','A place full of history']},
- {q:'Which role would you play in a heist movie?',a:['The mastermind','The smooth talker','The getaway driver','The accidental hero']},
- {q:'What would you bring to a deserted island?',a:['A book collection','A survival kit','My favorite person','A solar-powered phone']},
- {q:'A surprise party for you should include…',a:['Dancing all night','A small dinner','An outdoor adventure','Absolutely no surprise']},
- {q:'Which tiny luxury makes your day?',a:['Coffee in peace','Fresh sheets','A long shower','A snack at midnight']},
- {q:'Your ideal vacation pace?',a:['Every minute planned','Wander and discover','Sleep and recharge','Follow the food']},
- {q:'Which new skill would you learn overnight?',a:['Play an instrument','Speak every language','Cook anything','Dance perfectly']},
- {q:'What would your friends most likely call you about?',a:['Advice','A last-minute plan','A practical fix','A good laugh']},
- {q:'At a party, where would we find you?',a:['Running the music','Deep in conversation','Making everyone laugh','Finding the snacks']},
- {q:'Choose a secret personal theme song vibe.',a:['Epic movie soundtrack','Happy pop anthem','Chill acoustic track','Dramatic rock song']},
+ {q:'Your Saturday plans got canceled. What is your backup plan?',a:['A road trip with zero planning','Become one with the couch','Find friends and a giant meal','Start a hobby I may abandon']},
+ {q:'Pick a superpower. No, you cannot have all four.',a:['Teleport before anyone says “traffic”','Read minds (risky, I know)','Pause time for five more minutes','Ask animals what they think of me']},
+ {q:'A free plane ticket appears. Where are you escaping to?',a:['A beach and zero emails','A cabin in the mountains','A city that never sleeps','Somewhere full of history']},
+ {q:'Your friends plan a movie heist. What is your role?',a:['I have the whole plan','I talk us past security','I drive the getaway car','I trip into the plot somehow']},
+ {q:'Stranded on an island: what is in your suitcase?',a:['Books (so many books)','A sensible survival kit','My favorite person','A solar charger and my phone']},
+ {q:'Your friends throw you a surprise party. Your reaction?',a:['Turn the music ALL the way up','A small dinner, please','Take the party outdoors','Who told you I like surprises?']},
+ {q:'Which little thing instantly fixes a bad day?',a:['Coffee nobody interrupts','Fresh sheets: instant royalty','A shower that lasts forever','A midnight snack']},
+ {q:'You are on vacation. What is the plan?',a:['An itinerary with backup plans','Walk until something looks fun','Sleep like it is my job','Let the snacks choose the route']},
+ {q:'You can master one skill overnight. Pick your flex.',a:['Play an instrument like a star','Speak every language','Cook literally anything','Dance like nobody is recording']},
+ {q:'Your friends call you at 2 a.m. Why?',a:['They need advice','They have a wild last-minute plan','Something broke and I can fix it','They need a laugh']},
+ {q:'Where do you disappear to at a party?',a:['DJ booth (self-appointed)','A deep conversation in the corner','The unofficial comedy stage','Near the snacks, obviously']},
+ {q:'What song plays when you enter a room?',a:['An epic movie soundtrack','A loud pop anthem','A cozy acoustic tune','Dramatic rock, with wind machine']},
 ];
 const uid=()=>crypto.randomUUID();
 const code=()=>Array.from(crypto.getRandomValues(new Uint8Array(5))).map(x=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[x%32]).join('');
