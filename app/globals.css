@@ -205,5 +205,12 @@ body{background:radial-gradient(ellipse 38rem 28rem at 5% 0%,#fb4fa026,transpare
 .landing-share{margin-top:20px}
 .share-actions{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0}
 .share-actions .btn{flex:1 1 145px}
+.social-button{display:inline-flex;align-items:center;justify-content:center;gap:9px}
+.social-icon{flex:none;width:24px;height:24px}
+.btn.social-button.whatsapp{border-color:#25d366;background:#25d366;color:#082c1a;box-shadow:none}
+.btn.social-button.whatsapp:hover:not(:disabled){background:#66e58f}
+.btn.social-button.facebook{border-color:#1877f2;background:#1877f2;color:#fff;box-shadow:none}
+.btn.social-button.facebook:hover:not(:disabled){background:#378cfb}
+.stage .share-hint{margin:-8px 0 18px;color:#d4cde4;font-size:.88rem}
 .finished-share{margin-bottom:8px}
 @media(max-width:420px){.landing-share{width:100%}.share-actions .btn{flex-basis:100%}.finished-share{width:100%}}
