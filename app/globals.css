@@ -83,11 +83,8 @@
 .victory .winner{margin:0}
 .round-settings{margin:20px 0;padding:16px;border:1px solid #665485;border-radius:15px;background:#302445}
 .round-settings .field{margin-bottom:10px}
-.round-settings .small{margin:9px 0 0}
-.round-choices{display:flex;gap:9px}
-.round-choice{min-width:48px;min-height:48px;border:1px solid #84719f;border-radius:11px;background:#35284f;color:#fffaff;font-weight:900}
-.round-choice.selected{border:2px solid #7af5ed;background:#284859;color:#fffaff}
-.round-choice:hover:not(:disabled){border-color:#7af5ed}
+.round-select{width:100%;max-width:190px;min-height:48px;padding:8px 14px;border:1px solid #84719f;border-radius:11px;background:#35284f;color:#fffaff;font:inherit;font-weight:900}
+.round-select:focus-visible{outline:3px solid #7af5ed;outline-offset:3px}
 .brand-logo{display:block;width:190px;height:96px;object-fit:contain;object-position:left center}
 .cover-art{display:block;width:100%;max-width:610px;aspect-ratio:1672/941;object-fit:cover;margin:0 0 20px;border:1px solid #7af5ed5c;border-radius:20px;box-shadow:0 20px 55px #0604118c}
 @media(max-width:760px){.brand-logo{width:125px;height:70px}.cover-art{max-width:100%;margin-bottom:15px;border-radius:15px}}
