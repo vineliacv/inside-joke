@@ -76,6 +76,10 @@
   .music-toggle{min-width:44px;padding:7px}
   .language-switch button{padding:7px 8px;font-size:.78rem}
 }
+@media(max-width:360px){
+  .top{flex-wrap:wrap}
+  .top-actions{width:100%;justify-content:flex-end}
+}
 
 .avatar-picker{min-width:0;margin:0 0 17px;padding:0;border:0}
 .avatar-picker legend{padding:0}
