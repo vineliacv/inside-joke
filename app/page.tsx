@@ -60,11 +60,20 @@ export default function Home() {
     const savedAvatar = localStorage.getItem(avatarKey);
     if (savedAvatar && AVATARS.some(item => item === savedAvatar)) setAvatar(savedAvatar);
     const saved = localStorage.getItem(storeKey);
+    const code = new URLSearchParams(location.search).get('room')?.trim().toUpperCase() || '';
     if (saved) {
-      try { const s = JSON.parse(saved) as Session; if (s.code && s.token && s.me) setSavedSession(s); else localStorage.removeItem(storeKey); }
+      try {
+        const s = JSON.parse(saved) as Session;
+        if (s.code && s.token && s.me) {
+          setSavedSession(s);
+          if (!code || code === s.code) {
+            setSession(s);
+            void refresh(s);
+          }
+        } else localStorage.removeItem(storeKey);
+      }
       catch { localStorage.removeItem(storeKey); }
     }
-    const code = new URLSearchParams(location.search).get('room')?.trim().toUpperCase() || '';
     if (/^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{5}$/.test(code)) {
       setRoomCode(code);
       setInvitedRoom(code);
@@ -75,7 +84,14 @@ export default function Home() {
   useEffect(() => {
     if (!session) return;
     const timer = setInterval(() => refresh(session), 1500);
-    return () => clearInterval(timer);
+    const onReturn = () => { if (!document.hidden) void refresh(session); };
+    document.addEventListener('visibilitychange', onReturn);
+    window.addEventListener('pageshow', onReturn);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener('visibilitychange', onReturn);
+      window.removeEventListener('pageshow', onReturn);
+    };
   }, [session, refresh]);
 
   function changeLanguage(value: Locale) {
