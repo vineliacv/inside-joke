@@ -275,6 +275,10 @@ export default function Home() {
         </div>}
         <h2>{invitedRoom ? t('invitedToRoom') : entryMode === 'join' ? t('joinWithCode') : t('createRoom')}</h2>
         {invitedRoom && <div className="invite-code">{invitedRoom}</div>}
+        <section className="quick-rules" aria-label={t('howToPlay')}>
+          <h3>{t('howToPlay')}</h3>
+          <ol><li>{t('ruleRoom')}</li><li>{t('ruleGuess')}</li><li>{t('ruleBonus')}</li></ol>
+        </section>
         {savedSession && (!invitedRoom || invitedRoom === savedSession.code) && <Button className="btn ghost resume-room" onClick={() => {
           setSession(savedSession);
           history.replaceState(null, '', `/?room=${savedSession.code}`);
