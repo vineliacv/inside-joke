@@ -18,6 +18,7 @@ type Session = { code: string; token: string; me: string };
 const storeKey = 'inside-joke-session';
 const languageKey = 'inside-joke-language';
 const avatarKey = 'inside-joke-avatar';
+const phaseStickers: Record<string, string> = { lobby: '🎉', answer: '🎤', guess: '🔮', reveal: '👀', choice: '🎲', mini: '⭐', finished: '🏆' };
 
 export default function Home() {
   const [session, setSession] = useState<Session | null>(null);
@@ -204,6 +205,7 @@ export default function Home() {
       <div className="grid">
         <main className={`panel stage phase-${game.phase}`}>
           <div className="status">{game.phase === 'lobby' ? t('waitingFriends') : game.phase === 'finished' ? t('gameOver') : `${t('round')} ${game.round + 1} ${t('of')} ${game.total}`}</div>
+          <span className="stage-sticker" aria-hidden="true">{phaseStickers[game.phase]}</span>
           {game.phase !== 'lobby' && game.phase !== 'finished' && <div className="round-meter" role="progressbar" aria-label={t('gameProgress')} aria-valuenow={game.round + 1} aria-valuemin={1} aria-valuemax={game.total}><span style={{ width: `${((game.round + 1) / game.total) * 100}%` }}/></div>}
 
           {game.phase === 'lobby' && <>
