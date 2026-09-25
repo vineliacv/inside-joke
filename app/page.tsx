@@ -26,11 +26,13 @@ export default function Home() {
   const [name, setName] = useState('');
   const [roomCode, setRoomCode] = useState('');
   const [invitedRoom, setInvitedRoom] = useState('');
+  const [entryMode, setEntryMode] = useState<'create' | 'join'>('create');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [locale, setLocale] = useState<Locale>('en');
   const [avatar, setAvatar] = useState<string>(DEFAULT_AVATAR);
   const [copied, setCopied] = useState(false);
+  const [copiedCode, setCopiedCode] = useState(false);
   const t = (key: MessageKey) => messages[locale][key];
 
   const refresh = useCallback(async (s: Session) => {
@@ -61,6 +63,7 @@ export default function Home() {
     if (/^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{5}$/.test(code)) {
       setRoomCode(code);
       setInvitedRoom(code);
+      setEntryMode('join');
     }
   }, [refresh]);
 
@@ -87,7 +90,7 @@ export default function Home() {
     try {
       const r = await fetch('/api/game', {
         method: 'POST', headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ action, code: session?.code || roomCode.trim().toUpperCase(), token: session?.token, name: name.trim(), avatar, ...extra }),
+        body: JSON.stringify({ action, code: session?.code || roomCode.trim().toUpperCase(), token: session?.token || (action === 'join' && savedSession?.code === roomCode ? savedSession.token : undefined), name: name.trim(), avatar, ...extra }),
       });
       const d = await r.json() as { game: Game; code: string; token: string; me: string; error?: string };
       if (!r.ok) throw new Error(d.error || 'Please try again');
@@ -136,9 +139,13 @@ export default function Home() {
       </section>
       <div className="joinbox">
         <div className="form-kicker">{t('startPlaying')}</div>
-        <h2>{invitedRoom ? t('invitedToRoom') : t('createOrJoin')}</h2>
+        {!invitedRoom && <div className="entry-modes" role="group" aria-label={t('entryMethod')}>
+          <button type="button" className={entryMode === 'create' ? 'entry-mode selected' : 'entry-mode'} aria-pressed={entryMode === 'create'} onClick={() => { setEntryMode('create'); setError(''); }}>{t('createRoom')}</button>
+          <button type="button" className={entryMode === 'join' ? 'entry-mode selected' : 'entry-mode'} aria-pressed={entryMode === 'join'} onClick={() => { setEntryMode('join'); setError(''); }}>{t('joinWithCode')}</button>
+        </div>}
+        <h2>{invitedRoom ? t('invitedToRoom') : entryMode === 'join' ? t('joinWithCode') : t('createRoom')}</h2>
         {invitedRoom && <div className="invite-code">{invitedRoom}</div>}
-        {savedSession && !invitedRoom && <Button className="btn ghost resume-room" onClick={() => {
+        {savedSession && (!invitedRoom || invitedRoom === savedSession.code) && <Button className="btn ghost resume-room" onClick={() => {
           setSession(savedSession);
           history.replaceState(null, '', `/?room=${savedSession.code}`);
           refresh(savedSession);
@@ -149,19 +156,16 @@ export default function Home() {
           <legend className="field">{t('chooseAvatar')}</legend>
           <div className="avatar-choices">{AVATARS.map((choice, index) => <button key={choice} type="button" className={avatar === choice ? 'avatar-choice selected' : 'avatar-choice'} aria-pressed={avatar === choice} aria-label={`${t('avatar')} ${index + 1}: ${choice}`} onClick={() => chooseAvatar(choice)}>{choice}</button>)}</div>
         </fieldset>
-        <label className="field" htmlFor="code">{t('roomCodeJoin')} <span className="small">{t('toJoin')}</span></label>
-        <Input id="code" className="input" maxLength={5} value={roomCode} onChange={e => {
+        {entryMode === 'join' && <><label className="field" htmlFor="code">{t('roomCodeJoin')}</label>
+        <Input id="code" className="input" maxLength={5} autoCapitalize="characters" value={roomCode} onChange={e => {
           const nextCode = e.target.value.toUpperCase().replace(/[^A-Z2-9]/g, '');
           setRoomCode(nextCode);
           if (invitedRoom && nextCode !== invitedRoom) setInvitedRoom('');
-        }} placeholder="ABCDE"/>
-        {invitedRoom ? <Button className="btn invite-join" disabled={busy || !name.trim() || roomCode.length !== 5} onClick={() => act('join')}>{t('joinRoom')} {roomCode}</Button>
-          : <div className="row">
-            <Button className="btn" disabled={busy || !name.trim()} onClick={() => act('create')}>{t('createRoom')}</Button>
-            <Button className="btn alt" disabled={busy || !name.trim() || roomCode.length !== 5} onClick={() => act('join')}>{t('joinRoom')}</Button>
-          </div>}
+        }} placeholder="ABCDE"/></>}
+        {entryMode === 'join' ? <Button className="btn invite-join" disabled={busy || !name.trim() || roomCode.length !== 5} onClick={() => act('join')}>{t('joinRoom')}{roomCode.length === 5 ? ` ${roomCode}` : ''}</Button>
+          : <Button className="btn invite-join" disabled={busy || !name.trim()} onClick={() => act('create')}>{t('createRoom')}</Button>}
         {showError}
-        <p className="hint">{t('hostShares')}</p>
+        <p className="hint">{entryMode === 'join' ? t('joinHint') : t('hostShares')}</p>
       </div>
     </div> : <>
       <div className="roomhead">
@@ -171,8 +175,15 @@ export default function Home() {
           setSession(null);
           setGame(null);
           setInvitedRoom('');
+          setEntryMode('create');
           history.replaceState(null, '', '/');
         }}>{t('viewHome')}</Button><Button className="btn ghost" onClick={async () => {
+          try {
+            await navigator.clipboard.writeText(game.code);
+            setCopiedCode(true);
+            setTimeout(() => setCopiedCode(false), 2200);
+          } catch {}
+        }}>{copiedCode ? t('copiedCode') : t('copyCode')}</Button><Button className="btn ghost" onClick={async () => {
           try {
             await navigator.clipboard.writeText(`${location.origin}/?room=${game.code}&v=${Date.now()}`);
             setCopied(true);
