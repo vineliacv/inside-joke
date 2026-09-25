@@ -19,6 +19,11 @@
 .joinbox{width:100%;max-width:none;margin:0;padding:30px}
 .form-kicker{margin-bottom:6px;color:#7af5ed;font-size:.76rem;font-weight:900;letter-spacing:.16em}
 .joinbox h2{margin:0 0 24px;font-size:clamp(1.5rem,3vw,2rem);line-height:1.15;letter-spacing:-.04em}
+.quick-rules{margin:0 0 22px;padding:15px 17px;border:1px solid #7af5ed59;border-radius:15px;background:#7af5ed0d}
+.quick-rules h3{margin:0 0 9px;color:#b6fffa;font-size:1rem;line-height:1.3}
+.quick-rules ol{display:grid;gap:8px;margin:0;padding-left:21px;color:#f0e9fa;font-size:.92rem;line-height:1.4}
+.quick-rules li{padding-left:3px}
+.quick-rules li::marker{color:#7af5ed;font-weight:900}
 .joinbox .row{margin-top:3px}
 .roomhead{padding:15px 19px;border:1px solid #665485;border-radius:18px;background:#21183d}
 .roomhead .code{line-height:1.2}
