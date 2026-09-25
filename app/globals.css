@@ -202,3 +202,8 @@ body{background:radial-gradient(ellipse 38rem 28rem at 5% 0%,#fb4fa026,transpare
 @keyframes character-flutter{0%,100%{transform:translateY(0) scale(1)}30%{transform:translateY(-13px) scale(.92,1.05) rotate(-6deg)}60%{transform:translateY(-6px) scale(1.08,.96) rotate(7deg)}}
 @media(max-width:420px){.role-label .avatar.turn-avatar{flex-basis:80px;width:80px;height:80px;border-radius:22px}.avatar-choice{min-height:55px}.avatar-choice .avatar-art{width:52px;height:52px}}
 @media(prefers-reduced-motion:reduce){.turn-avatar .avatar-art,.victory-avatar .avatar-art{animation:none}}
+.landing-share{margin-top:20px}
+.share-actions{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0}
+.share-actions .btn{flex:1 1 145px}
+.finished-share{margin-bottom:8px}
+@media(max-width:420px){.landing-share{width:100%}.share-actions .btn{flex-basis:100%}.finished-share{width:100%}}
