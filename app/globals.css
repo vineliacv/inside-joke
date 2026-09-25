@@ -81,6 +81,13 @@
 .victory-avatar{display:grid;place-items:center;width:clamp(96px,27vw,136px);height:clamp(96px,27vw,136px);border:3px solid #7af5ed;border-radius:32px;background:#5a3d78;box-shadow:0 0 30px #7af5ed55;font-size:clamp(3.3rem,14vw,5.2rem);line-height:1}
 .stage .victory-message{margin:18px 0 4px;color:#fffaff;font-size:clamp(1.2rem,4vw,1.55rem);font-weight:900}
 .victory .winner{margin:0}
+.round-settings{margin:20px 0;padding:16px;border:1px solid #665485;border-radius:15px;background:#302445}
+.round-settings .field{margin-bottom:10px}
+.round-settings .small{margin:9px 0 0}
+.round-choices{display:flex;gap:9px}
+.round-choice{min-width:48px;min-height:48px;border:1px solid #84719f;border-radius:11px;background:#35284f;color:#fffaff;font-weight:900}
+.round-choice.selected{border:2px solid #7af5ed;background:#284859;color:#fffaff}
+.round-choice:hover:not(:disabled){border-color:#7af5ed}
 @media(max-width:420px){
   .avatar-choices{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
   .avatar-choice{min-height:49px;font-size:1.55rem}
