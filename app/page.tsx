@@ -202,7 +202,7 @@ export default function Home() {
         }}>{copied ? t('copiedLink') : t('copyLink')}</Button></div>
       </div>
       <div className="grid">
-        <main className="panel stage">
+        <main className={`panel stage phase-${game.phase}`}>
           <div className="status">{game.phase === 'lobby' ? t('waitingFriends') : game.phase === 'finished' ? t('gameOver') : `${t('round')} ${game.round + 1} ${t('of')} ${game.total}`}</div>
           {game.phase !== 'lobby' && game.phase !== 'finished' && <div className="round-meter" role="progressbar" aria-label={t('gameProgress')} aria-valuenow={game.round + 1} aria-valuemin={1} aria-valuemax={game.total}><span style={{ width: `${((game.round + 1) / game.total) * 100}%` }}/></div>}
 
@@ -210,6 +210,9 @@ export default function Home() {
             <h1>{t('gather')}</h1>
             <p>{t('shareCode')} <strong>{game.code}</strong>. {t('needTwo')}</p>
             <div className="notice">{game.players.length} {t('of')} 8 {t('joined')}</div>
+            <div className="lobby-players" aria-label={t('scoreboard')}>
+              {game.players.map(p => <div className="lobby-player" key={p.id}><span className="lobby-avatar" aria-hidden="true">{p.avatar ?? DEFAULT_AVATAR}</span><span>{p.name}</span></div>)}
+            </div>
             <div className="round-settings">
               <label className="field" htmlFor={session.me === game.host ? 'total-rounds' : undefined}>{t('totalRounds')}</label>
               {session.me === game.host ? <select id="total-rounds" className="round-select" value={game.total} disabled={busy} onChange={e => act('setRounds', { value: Number(e.target.value) })}>
@@ -224,7 +227,7 @@ export default function Home() {
             <h1>{question.q}</h1>
             {isSpot ? <>
               <p>{t('choosePrivate')}</p>
-              <div className="options">{question.a.map((o, i) => <Button key={i} className="option" disabled={busy} onClick={() => act('answer', { value: i })}>{o}</Button>)}</div>
+              <div className="options">{question.a.map((o, i) => <Button key={i} className="option" disabled={busy} onClick={() => act('answer', { value: i })}><span className="option-letter" aria-hidden="true">{String.fromCharCode(65 + i)}</span><span>{o}</span></Button>)}</div>
             </> : <p>{t('waitAnswer')} {spot?.name} {t('chooseAnswer')}</p>}
           </>}
 
@@ -234,7 +237,7 @@ export default function Home() {
             {isSpot ? <p>{t('answerLocked')} {game.guessed.length} {t('of')} {game.players.length - 1} {t('friendsGuessed')}</p>
               : game.myGuess !== null ? <div className="notice">{t('guessLocked')} <strong>{question.a[game.myGuess]}</strong><p>{game.guessed.length} {t('of')} {game.players.length - 1} {t('guessesIn')}</p></div>
                 : <><p>{locale === 'es' ? `¿Qué eligió ${spot?.name}?` : `What did ${spot?.name} choose?`}</p>
-                  <div className="options">{question.a.map((o, i) => <Button key={i} className="option" disabled={busy} onClick={() => act('guess', { value: i })}>{o}</Button>)}</div></>}
+                  <div className="options">{question.a.map((o, i) => <Button key={i} className="option" disabled={busy} onClick={() => act('guess', { value: i })}><span className="option-letter" aria-hidden="true">{String.fromCharCode(65 + i)}</span><span>{o}</span></Button>)}</div></>}
           </>}
 
           {game.phase === 'reveal' && question && <>
@@ -286,7 +289,7 @@ export default function Home() {
         </main>
         <aside className="panel scoreboard">
           <div className="eyebrow">{t('scoreboard')} · {game.players.length} {game.players.length === 1 ? t('player') : t('players')}</div>
-          <div className="scorelist">{[...game.players].sort((a, b) => b.score - a.score).map(p => <div className="person" key={p.id}><span className="avatar emoji" aria-hidden="true">{p.avatar ?? DEFAULT_AVATAR}</span><span>{p.name}{p.id === session.me ? ` (${t('you')})` : ''}</span><span className="points">{p.score}</span></div>)}</div>
+          <div className="scorelist">{[...game.players].sort((a, b) => b.score - a.score).map((p, index) => <div className={`person ${index === 0 ? 'leader' : ''}`} key={p.id}><span className="rank" aria-hidden="true">{index + 1}</span><span className="avatar emoji" aria-hidden="true">{p.avatar ?? DEFAULT_AVATAR}</span><span>{p.name}{p.id === session.me ? ` (${t('you')})` : ''}</span><span className="points">{p.score}</span></div>)}</div>
           <hr className="divider"/><p className="small">{t('scoring')}</p>
         </aside>
       </div>
