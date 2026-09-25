@@ -94,6 +94,7 @@
 .resume-room{width:100%;margin:0 0 20px}
 .roomhead-actions{display:flex;flex-wrap:wrap;gap:10px}
 @media(max-width:420px){.roomhead-actions{width:100%}.roomhead-actions .btn{flex:1;padding-inline:10px}}
+.cover-top{justify-content:flex-end;margin-bottom:8px}
 @media(max-width:420px){
   .avatar-choices{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
   .avatar-choice{min-height:49px;font-size:1.55rem}
