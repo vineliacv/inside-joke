@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { localizeError, localizeQuestion, messages, type Locale, type MessageKey } from './i18n';
@@ -38,17 +38,25 @@ export default function Home() {
   const [copied, setCopied] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
   const [shareFeedback, setShareFeedback] = useState<'game' | 'victory' | null>(null);
+  const refreshInFlight = useRef(false);
+  const gameUpdate = useRef(0);
   const t = (key: MessageKey) => messages[locale][key];
 
   const refresh = useCallback(async (s: Session) => {
+    if (refreshInFlight.current) return;
+    refreshInFlight.current = true;
+    const update = gameUpdate.current;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
     try {
-      const r = await fetch(`/api/game?code=${encodeURIComponent(s.code)}&token=${encodeURIComponent(s.token)}`, { cache: 'no-store' });
+      const r = await fetch(`/api/game?code=${encodeURIComponent(s.code)}&token=${encodeURIComponent(s.token)}`, { cache: 'no-store', signal: controller.signal });
       const d = await r.json() as { game: Game; error?: string };
+      if (update !== gameUpdate.current) return;
       if (r.ok) { setGame(d.game); setError(''); }
       else if (r.status === 403 || r.status === 404) {
         setSession(null); setSavedSession(null); setGame(null); localStorage.removeItem(storeKey);
       }
-    } catch {}
+    } catch {} finally { clearTimeout(timeout); refreshInFlight.current = false; }
   }, []);
 
   useEffect(() => {
@@ -83,7 +91,7 @@ export default function Home() {
 
   useEffect(() => {
     if (!session) return;
-    const timer = setInterval(() => refresh(session), 1500);
+    const timer = setInterval(() => { if (!document.hidden) void refresh(session); }, 3000);
     const onReturn = () => { if (!document.hidden) void refresh(session); };
     document.addEventListener('visibilitychange', onReturn);
     window.addEventListener('pageshow', onReturn);
@@ -125,6 +133,7 @@ export default function Home() {
       });
       const d = await r.json() as { game: Game; code: string; token: string; me: string; error?: string };
       if (!r.ok) throw new Error(d.error || 'Please try again');
+      gameUpdate.current++;
       if (action === 'create' || action === 'join') {
         const s = { code: d.code, token: d.token, me: d.me };
         setSession(s);
