@@ -5,6 +5,7 @@ export type Locale = 'en' | 'es';
 export const messages = {
   en: {
     tagline: '2–8 players · Play on your own device',
+    createdBy: 'Created by',
     friendTest: 'Friendship, under investigation',
     coverAlt: 'Inside Joke game cover with glowing speech bubbles',
     headline: 'Best friends… or just pizza friends?',
@@ -132,6 +133,7 @@ export const messages = {
   },
   es: {
     tagline: '2–8 jugadores · Cada uno en su dispositivo',
+    createdBy: 'Creado por',
     friendTest: 'Amistades bajo investigación',
     coverAlt: 'Portada de Inside Joke con bocadillos luminosos',
     headline: '¿Amigos de verdad… o solo de pizza?',
