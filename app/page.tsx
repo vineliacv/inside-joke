@@ -109,7 +109,7 @@ export default function Home() {
 
   return <div className="shell">
     <header className="top">
-      <div className="brand"><span className="brandmark">☺</span> Inside Joke</div>
+      <div className="brand"><img className="brand-logo" src="/inside-joke-logo.webp" alt="Inside Joke" /></div>
       <div className="top-actions">
         <span className="pill">{t('tagline')}</span>
         <div className="language-switch" role="group" aria-label={locale === 'es' ? 'Idioma' : 'Language'}>
@@ -121,6 +121,7 @@ export default function Home() {
 
     {!session || !game ? <div className="landing">
       <section className="intro">
+        <img className="cover-art" src="/inside-joke-cover.webp" alt={t('coverAlt')} />
         <div className="eyebrow">{t('friendTest')}</div>
         <h1>{t('headline')}</h1>
         <p>{t('intro')}</p>

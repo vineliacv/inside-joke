@@ -4,6 +4,7 @@ export const messages = {
   en: {
     tagline: '2–8 players · Play on your own device',
     friendTest: 'The friend test',
+    coverAlt: 'Inside Joke game cover with glowing speech bubbles',
     headline: 'How well do you really know them?',
     intro: 'Take turns in the spotlight. Guess your friends’ answers, earn points, and play a bonus challenge.',
     playersRange: '2–8 players',
@@ -91,6 +92,7 @@ export const messages = {
   es: {
     tagline: '2–8 jugadores · Cada uno en su dispositivo',
     friendTest: 'El reto entre amigos',
+    coverAlt: 'Portada de Inside Joke con bocadillos luminosos',
     headline: '¿Qué tanto conoces a tus amigos?',
     intro: 'Tomen turnos como protagonistas. Adivina sus respuestas, gana puntos y juega un reto extra.',
     playersRange: '2–8 jugadores',
