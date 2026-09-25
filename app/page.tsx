@@ -7,12 +7,14 @@ import { localizeError, localizeQuestion, messages, type Locale, type MessageKey
 import { AVATARS, DEFAULT_AVATAR } from '@/lib/avatars';
 
 type Player = { id: string; name: string; score: number; avatar?: string };
+type BonusChallenge = { kind: 'quiz'; prompt: { en: string; es: string }; answers: { en: string[]; es: string[] } } | { kind: 'search'; prompt: { en: string; es: string }; target: string; fillers: string[] };
 type Game = {
   code: string; host: string; players: Player[]; phase: string; round: number; total: number;
   spotlight: string; question: { q: string; a: string[] }; answer: number | null;
   hasAnswered: boolean; guessed: string[]; myGuess: number | null; earned: Record<string, number>;
   winner: string | null; chosen: string | null; miniKind: string | null;
-  miniIndex: number | null; miniDone: boolean;
+  miniIndex: number | null; miniDone: boolean; miniChallenge: BonusChallenge | null;
+  miniOptionsOrder: number[]; miniStartAt: number; miniAnswered: string[]; miniWinner: string | null; serverTime: number;
 };
 type Session = { code: string; token: string; me: string };
 const storeKey = 'inside-joke-session';
@@ -40,6 +42,8 @@ export default function Home() {
   const [copied, setCopied] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
   const [shareFeedback, setShareFeedback] = useState<'game' | 'victory' | null>(null);
+  const [clockOffset, setClockOffset] = useState(0);
+  const [now, setNow] = useState(() => Date.now());
   const refreshInFlight = useRef(false);
   const gameUpdate = useRef(0);
   const t = (key: MessageKey) => messages[locale][key];
@@ -50,11 +54,12 @@ export default function Home() {
     const update = gameUpdate.current;
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 8000);
+    const sentAt = Date.now();
     try {
       const r = await fetch(`/api/game?code=${encodeURIComponent(s.code)}&token=${encodeURIComponent(s.token)}`, { cache: 'no-store', signal: controller.signal });
       const d = await r.json() as { game: Game; error?: string };
       if (update !== gameUpdate.current) return;
-      if (r.ok) { setGame(d.game); setError(''); }
+      if (r.ok) { setClockOffset(d.game.serverTime - (sentAt + Date.now()) / 2); setGame(d.game); setError(''); }
       else if (r.status === 403 || r.status === 404) {
         setSession(null); setSavedSession(null); setGame(null); localStorage.removeItem(storeKey);
       }
@@ -93,7 +98,7 @@ export default function Home() {
 
   useEffect(() => {
     if (!session) return;
-    const timer = setInterval(() => { if (!document.hidden) void refresh(session); }, 3000);
+    const timer = setInterval(() => { if (!document.hidden) void refresh(session); }, game?.phase === 'mini' ? 600 : game?.phase === 'choice' ? 800 : 3000);
     const onReturn = () => { if (!document.hidden) void refresh(session); };
     document.addEventListener('visibilitychange', onReturn);
     window.addEventListener('pageshow', onReturn);
@@ -102,7 +107,13 @@ export default function Home() {
       document.removeEventListener('visibilitychange', onReturn);
       window.removeEventListener('pageshow', onReturn);
     };
-  }, [session, refresh]);
+  }, [session, refresh, game?.phase]);
+
+  useEffect(() => {
+    if (game?.phase !== 'mini') return;
+    const timer = setInterval(() => setNow(Date.now()), 100);
+    return () => clearInterval(timer);
+  }, [game?.phase]);
 
   function changeLanguage(value: Locale) {
     setLocale(value);
@@ -129,6 +140,7 @@ export default function Home() {
     }
     setBusy(true); setError('');
     try {
+      const sentAt = Date.now();
       const r = await fetch('/api/game', {
         method: 'POST', headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ action, code: session?.code || roomCode.trim().toUpperCase(), token: session?.token || (action === 'join' && savedSession?.code === roomCode ? savedSession.token : undefined), name: name.trim(), avatar, ...extra }),
@@ -136,6 +148,7 @@ export default function Home() {
       const d = await r.json() as { game: Game; code: string; token: string; me: string; error?: string };
       if (!r.ok) throw new Error(d.error || 'Please try again');
       gameUpdate.current++;
+      setClockOffset(d.game.serverTime - (sentAt + Date.now()) / 2);
       if (action === 'create' || action === 'join') {
         const s = { code: d.code, token: d.token, me: d.me };
         setSession(s);
@@ -189,6 +202,9 @@ export default function Home() {
   }
   const isSpot = me?.id === spot?.id;
   const isChosen = me?.id === chosen?.id;
+  const miniWinner = game?.players.find(x => x.id === game.miniWinner);
+  const bonusCountdown = game?.phase === 'mini' ? Math.max(0, Math.ceil((game.miniStartAt - now - clockOffset) / 1000)) : 0;
+  const canMiniAnswer = game?.phase === 'mini' && bonusCountdown === 0 && !game.miniDone && !game.miniAnswered.includes(session?.me ?? '');
   const question = game ? localizeQuestion(game.question, locale) : null;
   const showError = error && <p className="error" role="alert">{localizeError(error, locale)}</p>;
 
@@ -327,18 +343,16 @@ export default function Home() {
           </>}
 
           {game.phase === 'mini' && <>
-            <p className="eyebrow role-label"><span className={`avatar turn-avatar avatar-${avatarIndex(chosen?.avatar)}`} aria-hidden="true"><AvatarArt value={chosen?.avatar}/></span>{t('bonus')} · {chosen?.name}</p>
-            {game.miniKind === 'puzzle' ? <>
-              <h1>{t('quickPuzzle')}</h1><p>{t('numberNext')}</p>
-              {isChosen && !game.miniDone ? <div className="options">{['18', '24', '32', '64'].map((v, i) => <Button className="option" key={v} disabled={busy} onClick={() => act('miniAnswer', { value: i })}>{v}</Button>)}</div>
-                : <p>{game.miniDone ? t('challengeFinished') : t('waitMiniAnswer')}</p>}
-            </> : <>
-              <h1>{t('hiddenStar')}</h1>
-              <p>{t('tapStar')} {chosen?.name} {t('canAnswer')}</p>
-              <div className="mini-grid">{Array.from({ length: 25 }, (_, i) => <Button key={i} className="tile" disabled={!isChosen || game.miniDone || busy} aria-label={`${t('tile')} ${i + 1}`} onClick={() => act('miniAnswer', { value: i })}>{i === game.miniIndex ? '✦' : ['✿', '◆', '●', '✚'][i % 4]}</Button>)}</div>
-              {!isChosen && <p>{t('followSearch')} {chosen?.name} {t('searches')}</p>}
-            </>}
-            {game.miniDone && <><div className="notice">{t('challengeComplete')}</div><Button className="btn" disabled={busy} onClick={() => act('miniNext')}>{t('nextRound')}</Button></>}
+            <p className="eyebrow role-label"><span className={`avatar turn-avatar avatar-${avatarIndex(chosen?.avatar)}`} aria-hidden="true"><AvatarArt value={chosen?.avatar}/></span>{t('bonus')} · {t('everyonePlays')}</p>
+            {bonusCountdown > 0 ? <div className="bonus-countdown" role="status"><p>{t('sameChallenge')}</p><strong>{bonusCountdown}</strong><span>{t('getReady')}</span></div> : game.miniChallenge?.kind === 'quiz' ? <>
+              <h1>{game.miniChallenge.prompt[locale]}</h1><p>{t('fastestWins')}</p>
+              <div className="options">{game.miniOptionsOrder.map((index, position) => <Button className="option" key={index} disabled={!canMiniAnswer || busy} onClick={() => act('miniAnswer', { value: index })}><span className="option-letter" aria-hidden="true">{String.fromCharCode(65 + position)}</span><span>{game.miniChallenge?.kind === 'quiz' ? game.miniChallenge.answers[locale][index] : ''}</span></Button>)}</div>
+            </> : game.miniChallenge?.kind === 'search' ? <>
+              <h1>{game.miniChallenge.prompt[locale]}</h1><p>{t('fastestWins')}</p>
+              <div className="mini-grid">{Array.from({ length: 25 }, (_, i) => <Button key={i} className="tile" disabled={!canMiniAnswer || busy} aria-label={`${t('tile')} ${i + 1}: ${i === game.miniIndex ? game.miniChallenge?.kind === 'search' ? game.miniChallenge.target : '' : game.miniChallenge?.kind === 'search' ? game.miniChallenge.fillers[i % 4] : ''}`} onClick={() => act('miniAnswer', { value: i })}>{i === game.miniIndex ? game.miniChallenge?.kind === 'search' ? game.miniChallenge.target : '' : game.miniChallenge?.kind === 'search' ? game.miniChallenge.fillers[i % 4] : ''}</Button>)}</div>
+            </> : null}
+            {!game.miniDone && game.miniAnswered.includes(session.me) && <div className="notice">{t('answerLockedFastest')}</div>}
+            {game.miniDone && <><div className="notice" role="status">{miniWinner ? <><span className="avatar" aria-hidden="true"><AvatarArt value={miniWinner.avatar}/></span> {miniWinner.name} {t('fastestWinner')}</> : t('noBonusWinner')}</div><Button className="btn" disabled={busy} onClick={() => act('miniNext')}>{t('nextRound')}</Button></>}
           </>}
 
           {game.phase === 'finished' && <>
