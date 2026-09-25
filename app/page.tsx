@@ -16,6 +16,7 @@ type Game = {
   winner: string | null; chosen: string | null; miniKind: string | null;
   miniIndex: number | null; miniDone: boolean; miniChallenge: BonusChallenge | null;
   miniOptionsOrder: number[]; miniStartAt: number; miniEndAt: number; miniAnswered: string[]; miniWinner: string | null; serverTime: number;
+  recoverAt: number; resultReadyAt: number;
 };
 type Session = { code: string; token: string; me: string };
 const storeKey = 'inside-joke-session';
@@ -119,8 +120,8 @@ export default function Home() {
   }, [session, refresh, game?.phase]);
 
   useEffect(() => {
-    if (game?.phase !== 'mini') return;
-    const timer = setInterval(() => setNow(Date.now()), 100);
+    if (!game || game.phase === 'lobby' || game.phase === 'finished') return;
+    const timer = setInterval(() => setNow(Date.now()), game.phase === 'mini' ? 100 : 1000);
     return () => clearInterval(timer);
   }, [game?.phase]);
 
@@ -236,6 +237,8 @@ export default function Home() {
   const miniWinner = game?.players.find(x => x.id === game.miniWinner);
   const bonusCountdown = game?.phase === 'mini' ? Math.max(0, Math.ceil((game.miniStartAt - now - clockOffset) / 1000)) : 0;
   const bonusTimeLeft = game?.phase === 'mini' ? Math.max(0, Math.ceil((game.miniEndAt - now - clockOffset) / 1000)) : 0;
+  const recoveryTimeLeft = game?.recoverAt ? Math.max(0, Math.ceil((game.recoverAt - now - clockOffset) / 1000)) : 0;
+  const resultTimeLeft = game?.resultReadyAt ? Math.max(0, Math.ceil((game.resultReadyAt - now - clockOffset) / 1000)) : 0;
   const canMiniAnswer = game?.phase === 'mini' && bonusCountdown === 0 && !game.miniDone && !game.miniAnswered.includes(session?.me ?? '');
   const question = game ? localizeQuestion(game.question, locale) : null;
   const showError = error && <p className="error" role="alert">{localizeError(error, locale)}</p>;
@@ -324,6 +327,7 @@ export default function Home() {
           <div className="status">{game.phase === 'lobby' ? t('waitingFriends') : game.phase === 'finished' ? t('gameOver') : `${t('round')} ${game.round + 1} ${t('of')} ${game.total}`}</div>
           <span className="stage-sticker" aria-hidden="true">{phaseStickers[game.phase]}</span>
           {game.phase !== 'lobby' && game.phase !== 'finished' && <div className="round-meter" role="progressbar" aria-label={t('gameProgress')} aria-valuenow={game.round + 1} aria-valuemin={1} aria-valuemax={game.total}><span style={{ width: `${((game.round + 1) / game.total) * 100}%` }}/></div>}
+          {game.recoverAt > 0 && recoveryTimeLeft > 0 && <p className="hint">{t('recoveryIn')} {recoveryTimeLeft}s</p>}
 
           {game.phase === 'lobby' && <>
             <h1>{t('gather')}</h1>
@@ -348,6 +352,7 @@ export default function Home() {
               <p>{t('choosePrivate')}</p>
               <div className="options">{question.a.map((o, i) => <Button key={i} className="option" disabled={busy} onClick={() => act('answer', { value: i })}><span className="option-letter" aria-hidden="true">{String.fromCharCode(65 + i)}</span><span>{o}</span></Button>)}</div>
             </> : <p>{t('waitAnswer')} {spot?.name} {t('chooseAnswer')}</p>}
+            {recoveryTimeLeft === 0 && <Button className="btn alt" disabled={busy} onClick={() => act('recover')}>{t('continueGame')}</Button>}
           </>}
 
           {game.phase === 'guess' && question && <>
@@ -357,6 +362,7 @@ export default function Home() {
               : game.myGuess !== null ? <div className="notice">{t('guessLocked')} <strong>{question.a[game.myGuess]}</strong><p>{game.guessed.length} {t('of')} {game.players.length - 1} {t('guessesIn')}</p></div>
                 : <><p>{locale === 'es' ? `¿Qué eligió ${spot?.name}?` : `What did ${spot?.name} choose?`}</p>
                   <div className="options">{question.a.map((o, i) => <Button key={i} className="option" disabled={busy} onClick={() => act('guess', { value: i })}><span className="option-letter" aria-hidden="true">{String.fromCharCode(65 + i)}</span><span>{o}</span></Button>)}</div></>}
+            {recoveryTimeLeft === 0 && <><p className="hint">{t('missingNoPoints')}</p><Button className="btn alt" disabled={busy} onClick={() => act('recover')}>{t('continueGame')}</Button></>}
           </>}
 
           {game.phase === 'reveal' && question && <>
@@ -365,7 +371,7 @@ export default function Home() {
             <h2 className="winner">{question.a[game.answer ?? 0]}</h2>
             <div className="notice">{winner?.name} {t('winsRound')} {chosen?.name} {t('nextChoice')}</div>
             <div className="scorelist">{game.players.map(p => <div className="person" key={p.id}><span className="avatar" aria-hidden="true"><AvatarArt value={p.avatar}/></span>{p.name}<span className="points">+{game.earned[p.id] || 0}</span></div>)}</div>
-            <Button className="btn" disabled={busy} onClick={() => act('revealNext')}>{t('continue')}</Button>
+            <Button className="btn" disabled={busy || resultTimeLeft > 0} onClick={() => act('revealNext')}>{t('continue')}{resultTimeLeft > 0 ? ` · ${resultTimeLeft}s` : ''}</Button>
           </>}
 
           {game.phase === 'choice' && <>
@@ -376,6 +382,7 @@ export default function Home() {
               <Button className="btn" disabled={busy} onClick={() => act('choose', { value: 'mini' })}>{t('tryMini')}</Button>
               <Button className="btn alt" disabled={busy} onClick={() => act('choose', { value: 'regular' })}>{t('regular')}</Button>
             </div> : <p>{t('waitDecision')} {chosen?.name} {t('decide')}</p>}
+            {recoveryTimeLeft === 0 && <Button className="btn alt" disabled={busy} onClick={() => act('recover')}>{t('continueRegular')}</Button>}
           </>}
 
           {game.phase === 'mini' && <>
@@ -389,7 +396,7 @@ export default function Home() {
               <div className="mini-grid">{Array.from({ length: 25 }, (_, i) => <Button key={i} className="tile" disabled={!canMiniAnswer || busy} aria-label={`${t('tile')} ${i + 1}: ${i === game.miniIndex ? game.miniChallenge?.kind === 'search' ? game.miniChallenge.target : '' : game.miniChallenge?.kind === 'search' ? game.miniChallenge.fillers[i % 4] : ''}`} onClick={() => act('miniAnswer', { value: i })}>{i === game.miniIndex ? game.miniChallenge?.kind === 'search' ? game.miniChallenge.target : '' : game.miniChallenge?.kind === 'search' ? game.miniChallenge.fillers[i % 4] : ''}</Button>)}</div>
             </> : null}
             {!game.miniDone && game.miniAnswered.includes(session.me) && <div className="notice">{t('answerLockedFastest')}</div>}
-            {game.miniDone && <><div className="notice" role="status">{miniWinner ? <><span className="avatar" aria-hidden="true"><AvatarArt value={miniWinner.avatar}/></span> {miniWinner.name} {t('fastestWinner')}</> : t('noBonusWinner')}</div><Button className="btn" disabled={busy} onClick={() => act('miniNext')}>{t('nextRound')}</Button></>}
+            {game.miniDone && <><div className="notice" role="status">{miniWinner ? <><span className="avatar" aria-hidden="true"><AvatarArt value={miniWinner.avatar}/></span> {miniWinner.name} {t('fastestWinner')}</> : t('noBonusWinner')}</div><Button className="btn" disabled={busy || resultTimeLeft > 0} onClick={() => act('miniNext')}>{t('nextRound')}{resultTimeLeft > 0 ? ` · ${resultTimeLeft}s` : ''}</Button></>}
           </>}
 
           {game.phase === 'finished' && <>
