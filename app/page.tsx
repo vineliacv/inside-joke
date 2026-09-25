@@ -225,7 +225,7 @@ export default function Home() {
           </>}
 
           {game.phase === 'answer' && question && <>
-            <p className="eyebrow role-label"><span className="avatar emoji" aria-hidden="true">{spot?.avatar ?? DEFAULT_AVATAR}</span>{isSpot ? t('yourSpotlight') : `${spot?.name} ${t('spotlight')}`}</p>
+            <p className="eyebrow role-label"><span className="avatar emoji turn-avatar" aria-hidden="true">{spot?.avatar ?? DEFAULT_AVATAR}</span>{isSpot ? t('yourSpotlight') : `${spot?.name} ${t('spotlight')}`}</p>
             <h1>{question.q}</h1>
             {isSpot ? <>
               <p>{t('choosePrivate')}</p>
@@ -234,7 +234,7 @@ export default function Home() {
           </>}
 
           {game.phase === 'guess' && question && <>
-            <p className="eyebrow role-label"><span className="avatar emoji" aria-hidden="true">{spot?.avatar ?? DEFAULT_AVATAR}</span>{t('guessTime')} · {spot?.name}</p>
+            <p className="eyebrow role-label"><span className="avatar emoji turn-avatar" aria-hidden="true">{spot?.avatar ?? DEFAULT_AVATAR}</span>{t('guessTime')} · {spot?.name}</p>
             <h1>{question.q}</h1>
             {isSpot ? <p>{t('answerLocked')} {game.guessed.length} {t('of')} {game.players.length - 1} {t('friendsGuessed')}</p>
               : game.myGuess !== null ? <div className="notice">{t('guessLocked')} <strong>{question.a[game.myGuess]}</strong><p>{game.guessed.length} {t('of')} {game.players.length - 1} {t('guessesIn')}</p></div>
@@ -243,7 +243,7 @@ export default function Home() {
           </>}
 
           {game.phase === 'reveal' && question && <>
-            <p className="eyebrow role-label"><span className="avatar emoji" aria-hidden="true">{spot?.avatar ?? DEFAULT_AVATAR}</span>{t('reveal')}</p>
+            <p className="eyebrow role-label"><span className="avatar emoji turn-avatar" aria-hidden="true">{spot?.avatar ?? DEFAULT_AVATAR}</span>{t('reveal')}</p>
             <h1>{spot?.name} {t('chose')}</h1>
             <h2 className="winner">{question.a[game.answer ?? 0]}</h2>
             <div className="notice">{winner?.name} {t('winsRound')} {chosen?.name} {t('nextChoice')}</div>
@@ -252,7 +252,7 @@ export default function Home() {
           </>}
 
           {game.phase === 'choice' && <>
-            <p className="eyebrow role-label"><span className="avatar emoji" aria-hidden="true">{chosen?.avatar ?? DEFAULT_AVATAR}</span>{t('yourCall')} {chosen?.name}</p>
+            <p className="eyebrow role-label"><span className="avatar emoji turn-avatar" aria-hidden="true">{chosen?.avatar ?? DEFAULT_AVATAR}</span>{t('yourCall')} {chosen?.name}</p>
             <h1>{t('regularOrBonus')}</h1>
             <p>{chosen?.name} {t('chosenRandom')}</p>
             {isChosen ? <div className="options">
@@ -262,7 +262,7 @@ export default function Home() {
           </>}
 
           {game.phase === 'mini' && <>
-            <p className="eyebrow role-label"><span className="avatar emoji" aria-hidden="true">{chosen?.avatar ?? DEFAULT_AVATAR}</span>{t('bonus')} · {chosen?.name}</p>
+            <p className="eyebrow role-label"><span className="avatar emoji turn-avatar" aria-hidden="true">{chosen?.avatar ?? DEFAULT_AVATAR}</span>{t('bonus')} · {chosen?.name}</p>
             {game.miniKind === 'puzzle' ? <>
               <h1>{t('quickPuzzle')}</h1><p>{t('numberNext')}</p>
               {isChosen && !game.miniDone ? <div className="options">{['18', '24', '32', '64'].map((v, i) => <Button className="option" key={v} disabled={busy} onClick={() => act('miniAnswer', { value: i })}>{v}</Button>)}</div>
