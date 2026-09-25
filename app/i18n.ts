@@ -1,3 +1,5 @@
+import { moreQuestions } from '@/lib/more-questions';
+
 export type Locale = 'en' | 'es';
 
 export const messages = {
@@ -215,6 +217,7 @@ const spanishQuestions: Record<string, { q: string; a: [string, string, string, 
   'Where do you disappear to at a party?': { q: '¿Dónde desapareces durante una fiesta?', a: ['En la cabina del DJ sin que me inviten', 'En una conversación profunda', 'En mi escenario de comedia imaginario', 'Al lado de la comida, obviamente'] },
   'What song plays when you enter a room?': { q: '¿Qué música suena cuando entras a una habitación?', a: ['Banda sonora de película épica', 'Pop a todo volumen', 'Una canción acústica tranquila', 'Rock dramático y ventilador de fondo'] },
 };
+const moreSpanishQuestions = Object.fromEntries(moreQuestions.map(({en, es}) => [en.q, es]));
 
 const spanishErrors: Record<string, string> = {
   'Enter your name': 'Escribe tu nombre.',
@@ -244,7 +247,7 @@ const spanishErrors: Record<string, string> = {
 };
 
 export function localizeQuestion(question: { q: string; a: string[] }, locale: Locale) {
-  return locale === 'es' ? spanishQuestions[question.q] ?? question : question;
+  return locale === 'es' ? spanishQuestions[question.q] ?? moreSpanishQuestions[question.q] ?? question : question;
 }
 
 export function localizeError(error: string, locale: Locale) {
