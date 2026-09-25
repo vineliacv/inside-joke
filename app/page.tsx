@@ -22,6 +22,8 @@ const phaseStickers: Record<string, string> = { lobby: '🎉', answer: '🎤', g
 const avatarImages = ['/avatars/fox.webp', '/avatars/panda.webp', '/avatars/frog.webp', '/avatars/unicorn.webp', '/avatars/octopus.webp', '/avatars/tiger.webp', '/avatars/penguin.webp', '/avatars/butterfly.webp'];
 function avatarIndex(value?: string) { const index = AVATARS.indexOf((value ?? DEFAULT_AVATAR) as typeof AVATARS[number]); return index < 0 ? 0 : index; }
 function AvatarArt({ value }: { value?: string }) { return <img className="avatar-art" src={avatarImages[avatarIndex(value)]} alt="" aria-hidden="true" draggable={false} />; }
+function WhatsAppIcon() { return <svg className="social-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20.3 11.6a8.3 8.3 0 0 1-12 7.5L3.5 20.5l1.4-4.7A8.3 8.3 0 1 1 20.3 11.6Z"/><path d="M8.8 7.8c-.5.2-1 1.2-.8 2.2.4 2 3.3 4.9 5.5 5.6 1.1.3 2.1-.1 2.5-.8l.3-.8-2.2-1.1-1 1c-1.5-.7-2.8-2-3.4-3.4l.9-1.1-1.1-1.8-.7.2Z"/></svg>; }
+function FacebookIcon() { return <svg className="social-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.9 21v-8h2.7l.4-3.1h-3.1V8c0-.9.3-1.5 1.6-1.5h1.7V3.7a23 23 0 0 0-2.5-.1c-2.5 0-4.2 1.5-4.2 4.3v2H7.7V13h2.8v8h3.4Z"/></svg>; }
 
 export default function Home() {
   const [session, setSession] = useState<Session | null>(null);
@@ -178,11 +180,11 @@ export default function Home() {
     }
     await copyShare(kind);
   }
-  function openSocial(network: 'whatsapp' | 'x') {
+  function openSocial(network: 'whatsapp' | 'facebook') {
     const message = victoryMessage();
     const url = network === 'whatsapp'
       ? `https://api.whatsapp.com/send?text=${encodeURIComponent(`${message} ${gameInvite()}`)}`
-      : `https://twitter.com/intent/tweet?text=${encodeURIComponent(message)}&url=${encodeURIComponent(gameInvite())}`;
+      : `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(gameInvite())}`;
     window.open(url, '_blank', 'noopener,noreferrer');
   }
   const isSpot = me?.id === spot?.id;
@@ -350,9 +352,10 @@ export default function Home() {
             {isFinalWinner && <div className="share-actions" aria-label={t('shareVictory')}>
               <Button className="btn" onClick={() => share('victory')}>{shareFeedback === 'victory' ? t('resultCopied') : t('shareVictory')}</Button>
               <Button className="btn ghost" onClick={() => copyShare('victory')}>{shareFeedback === 'victory' ? t('resultCopied') : t('copyResult')}</Button>
-              <Button className="btn alt" onClick={() => openSocial('whatsapp')}>WhatsApp</Button>
-              <Button className="btn alt" onClick={() => openSocial('x')}>X</Button>
+              <Button className="btn social-button whatsapp" onClick={() => openSocial('whatsapp')}><WhatsAppIcon/>WhatsApp</Button>
+              <Button className="btn social-button facebook" onClick={() => openSocial('facebook')}><FacebookIcon/>Facebook</Button>
             </div>}
+            {isFinalWinner && <p className="share-hint">{t('facebookShareHint')}</p>}
             <Button className="btn ghost finished-share" onClick={() => share('game')}>{shareFeedback === 'game' ? t('gameCopied') : t('shareGame')}</Button>
             <p>{t('roundsPlayed')}: {game.total}</p>
             <Button className="btn alt" onClick={() => { localStorage.removeItem(storeKey); setSession(null); setSavedSession(null); setGame(null); history.replaceState(null, '', '/'); }}>{t('newRoom')}</Button>
