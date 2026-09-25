@@ -37,6 +37,7 @@ export default function Home() {
   const [avatar, setAvatar] = useState<string>(DEFAULT_AVATAR);
   const [copied, setCopied] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
+  const [shareFeedback, setShareFeedback] = useState<'game' | 'victory' | null>(null);
   const t = (key: MessageKey) => messages[locale][key];
 
   const refresh = useCallback(async (s: Session) => {
@@ -126,6 +127,39 @@ export default function Home() {
   const chosen = game?.players.find(x => x.id === game.chosen);
   const winner = game?.players.find(x => x.id === game.winner);
   const finalWinners = game?.phase === 'finished' ? game.players.filter(x => x.score === Math.max(...game.players.map(p => p.score))) : [];
+  const isFinalWinner = finalWinners.some(p => p.id === session?.me);
+  const gameInvite = () => `${location.origin}/`;
+  const victoryMessage = () => locale === 'es'
+    ? `${finalWinners.length > 1 ? '¡Empaté en primer lugar' : '¡Gané'} en Inside Joke con ${me?.score ?? 0} puntos! ¿Te animas a jugar?`
+    : `I ${finalWinners.length > 1 ? 'tied for first place' : 'won'} at Inside Joke with ${me?.score ?? 0} points! Want to play?`;
+  function shareMessage(kind: 'game' | 'victory') {
+    return kind === 'victory' ? victoryMessage() : t('gameShareText');
+  }
+  async function copyShare(kind: 'game' | 'victory') {
+    try {
+      await navigator.clipboard.writeText(`${shareMessage(kind)} ${gameInvite()}`);
+      setShareFeedback(kind);
+      setTimeout(() => setShareFeedback(null), 2500);
+    } catch { setError('Please try again'); }
+  }
+  async function share(kind: 'game' | 'victory') {
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: 'Inside Joke', text: shareMessage(kind), url: gameInvite() });
+        return;
+      } catch (e) {
+        if (e instanceof DOMException && e.name === 'AbortError') return;
+      }
+    }
+    await copyShare(kind);
+  }
+  function openSocial(network: 'whatsapp' | 'x') {
+    const message = victoryMessage();
+    const url = network === 'whatsapp'
+      ? `https://api.whatsapp.com/send?text=${encodeURIComponent(`${message} ${gameInvite()}`)}`
+      : `https://twitter.com/intent/tweet?text=${encodeURIComponent(message)}&url=${encodeURIComponent(gameInvite())}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
+  }
   const isSpot = me?.id === spot?.id;
   const isChosen = me?.id === chosen?.id;
   const question = game ? localizeQuestion(game.question, locale) : null;
@@ -149,6 +183,7 @@ export default function Home() {
         <div className="eyebrow">{t('friendTest')}</div>
         <h1>{t('headline')}</h1>
         <p>{t('intro')}</p>
+        <Button className="btn ghost landing-share" onClick={() => share('game')}>{shareFeedback === 'game' ? t('gameCopied') : t('shareGame')}</Button>
         <div className="intro-meta"><span>{t('playersRange')}</span><span>{t('ownDevice')}</span></div>
       </section>
       <div className="joinbox">
@@ -287,6 +322,13 @@ export default function Home() {
               <p className="victory-message">{finalWinners.length === 1 ? t('congratulations') : t('congratulationsTie')}</p>
               <h2 className="winner">{locale === 'es' ? '¡' : ''}{finalWinners.map(p => p.name).join(' & ')} {finalWinners.length === 1 ? t('wins') : t('tie')}</h2>
             </div>
+            {isFinalWinner && <div className="share-actions" aria-label={t('shareVictory')}>
+              <Button className="btn" onClick={() => share('victory')}>{shareFeedback === 'victory' ? t('resultCopied') : t('shareVictory')}</Button>
+              <Button className="btn ghost" onClick={() => copyShare('victory')}>{shareFeedback === 'victory' ? t('resultCopied') : t('copyResult')}</Button>
+              <Button className="btn alt" onClick={() => openSocial('whatsapp')}>WhatsApp</Button>
+              <Button className="btn alt" onClick={() => openSocial('x')}>X</Button>
+            </div>}
+            <Button className="btn ghost finished-share" onClick={() => share('game')}>{shareFeedback === 'game' ? t('gameCopied') : t('shareGame')}</Button>
             <p>{t('roundsPlayed')}: {game.total}</p>
             <Button className="btn alt" onClick={() => { localStorage.removeItem(storeKey); setSession(null); setSavedSession(null); setGame(null); history.replaceState(null, '', '/'); }}>{t('newRoom')}</Button>
           </>}
