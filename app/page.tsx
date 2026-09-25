@@ -101,6 +101,7 @@ export default function Home() {
   const spot = game?.players.find(x => x.id === game.spotlight);
   const chosen = game?.players.find(x => x.id === game.chosen);
   const winner = game?.players.find(x => x.id === game.winner);
+  const finalWinners = game?.phase === 'finished' ? game.players.filter(x => x.score === Math.max(...game.players.map(p => p.score))) : [];
   const isSpot = me?.id === spot?.id;
   const isChosen = me?.id === chosen?.id;
   const question = game ? localizeQuestion(game.question, locale) : null;
@@ -221,7 +222,11 @@ export default function Home() {
           {game.phase === 'finished' && <>
             <p className="eyebrow">{t('finalScores')}</p>
             <h1>{t('wrap')}</h1>
-            <h2 className="winner">{locale === 'es' ? '¡' : ''}{game.players.filter(x => x.score === Math.max(...game.players.map(p => p.score))).map(x => x.name).join(' & ')} {game.players.filter(x => x.score === Math.max(...game.players.map(p => p.score))).length === 1 ? (locale === 'es' ? 'gana!' : t('wins')) : (locale === 'es' ? 'empatan!' : t('tie'))}</h2>
+            <div className="victory" aria-label={finalWinners.map(p => p.name).join(' & ')}>
+              <div className="victory-avatars">{finalWinners.map(p => <span className="victory-avatar" key={p.id} aria-hidden="true">{p.avatar ?? DEFAULT_AVATAR}</span>)}</div>
+              <p className="victory-message">{finalWinners.length === 1 ? t('congratulations') : t('congratulationsTie')}</p>
+              <h2 className="winner">{locale === 'es' ? '¡' : ''}{finalWinners.map(p => p.name).join(' & ')} {finalWinners.length === 1 ? t('wins') : t('tie')}</h2>
+            </div>
             <p>{t('twoTurns')}</p>
             <Button className="btn alt" onClick={() => { localStorage.removeItem(storeKey); setSession(null); setGame(null); history.replaceState(null, '', '/'); }}>{t('newRoom')}</Button>
           </>}
