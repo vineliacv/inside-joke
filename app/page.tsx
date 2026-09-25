@@ -431,5 +431,6 @@ export default function Home() {
         </aside>
       </div>
     </>}
+    <footer className="site-credit">© 2026 Inside Joke · {t('createdBy')} <a href="https://vcv-services.com/" target="_blank" rel="noopener noreferrer">VCV Tech Solution</a></footer>
   </div>;
 }
