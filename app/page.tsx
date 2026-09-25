@@ -19,6 +19,7 @@ type Game = {
 };
 type Session = { code: string; token: string; me: string };
 const storeKey = 'inside-joke-session';
+const sharingKey = 'inside-joke-share-return';
 const languageKey = 'inside-joke-language';
 const avatarKey = 'inside-joke-avatar';
 const phaseStickers: Record<string, string> = { lobby: '🎉', answer: '🎤', guess: '🔮', reveal: '👀', choice: '🎲', mini: '⭐', finished: '🏆' };
@@ -63,9 +64,7 @@ export default function Home() {
       const d = await r.json() as { game: Game; error?: string };
       if (update !== gameUpdate.current) return;
       if (r.ok) { setClockOffset(d.game.serverTime - (sentAt + Date.now()) / 2); setGame(d.game); setError(''); }
-      else if (r.status === 403 || r.status === 404) {
-        setSession(null); setSavedSession(null); setGame(null); localStorage.removeItem(storeKey);
-      }
+      else if (r.status === 403 || r.status === 404) setError(d.error || 'Please try again');
     } catch {} finally { clearTimeout(timeout); refreshInFlight.current = false; }
   }, []);
 
@@ -79,12 +78,19 @@ export default function Home() {
     if (savedAvatar && AVATARS.some(item => item === savedAvatar)) setAvatar(savedAvatar);
     const saved = localStorage.getItem(storeKey);
     const code = new URLSearchParams(location.search).get('room')?.trim().toUpperCase() || '';
+    let sharedCode = '';
+    try {
+      const marker = JSON.parse(sessionStorage.getItem(sharingKey) || 'null') as { code?: string; until?: number } | null;
+      if (marker?.until && marker.until > Date.now()) sharedCode = marker.code || '';
+    } catch {}
+    sessionStorage.removeItem(sharingKey);
     if (saved) {
       try {
         const s = JSON.parse(saved) as Session;
         if (s.code && s.token && s.me) {
           setSavedSession(s);
-          if (code === s.code) {
+          if (code === s.code || (!code && sharedCode === s.code)) {
+            if (!code) history.replaceState(null, '', `/?room=${s.code}`);
             setSession(s);
             void refresh(s);
           }
@@ -202,10 +208,13 @@ export default function Home() {
     const message = `${t('roomInviteText')} ${game.code}`;
     if (navigator.share) {
       try {
+        sessionStorage.setItem(sharingKey, JSON.stringify({ code: game.code, until: Date.now() + 120000 }));
         await navigator.share({ title: 'Inside Joke', text: message, url: link });
         return;
       } catch (e) {
         if (e instanceof DOMException && e.name === 'AbortError') return;
+      } finally {
+        sessionStorage.removeItem(sharingKey);
       }
     }
     try {
@@ -234,8 +243,8 @@ export default function Home() {
       {session && game && <div className="brand"><img className="brand-logo" src="/inside-joke-logo.webp" alt="Inside Joke" /></div>}
       <div className="top-actions">
         <span className="pill">{t('tagline')}</span>
-        <button type="button" className="music-toggle" aria-pressed={music.enabled} onClick={music.toggle} aria-label={music.enabled ? t('musicOff') : t('musicOn')} title={music.enabled ? t('musicOff') : t('musicOn')}>
-          <span aria-hidden="true">{music.enabled ? '♫' : '♪'}</span><span className="music-label">{music.enabled ? t('musicOff') : t('musicOn')}</span>
+        <button type="button" className="music-toggle" aria-pressed={music.playing} onClick={music.toggle} aria-label={music.playing ? t('musicOff') : music.enabled ? t('musicResume') : t('musicOn')} title={music.playing ? t('musicOff') : music.enabled ? t('musicResume') : t('musicOn')}>
+          <span aria-hidden="true">{music.playing ? '♫' : '♪'}</span><span className="music-label">{music.playing ? t('musicOff') : music.enabled ? t('musicResume') : t('musicOn')}</span>
         </button>
         <div className="language-switch" role="group" aria-label={locale === 'es' ? 'Idioma' : 'Language'}>
           <button type="button" lang="es" aria-pressed={locale === 'es'} className={locale === 'es' ? 'active' : ''} onClick={() => changeLanguage('es')}>Español</button>
