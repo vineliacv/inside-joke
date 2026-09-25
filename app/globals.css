@@ -94,6 +94,10 @@
 .cover-top{justify-content:flex-end;margin-bottom:8px}
 .invite-code{margin:-8px 0 18px;color:#7af5ed;font-size:2rem;font-weight:900;letter-spacing:.13em}
 .invite-join{width:100%}
+.entry-modes{display:flex;gap:8px;margin:0 0 18px}
+.entry-mode{flex:1;min-height:46px;padding:8px 10px;border:1px solid #84719f;border-radius:12px;background:#35284f;color:#fffaff;font-size:.9rem;font-weight:800}
+.entry-mode.selected{border-color:#7af5ed;background:#284859;color:#eafffd}
+.entry-mode:hover{border-color:#7af5ed}
 @media(max-width:420px){
   .avatar-choices{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
   .avatar-choice{min-height:49px;font-size:1.55rem}
