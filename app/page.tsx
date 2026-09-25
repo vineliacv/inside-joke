@@ -110,8 +110,8 @@ export default function Home() {
   const showError = error && <p className="error" role="alert">{localizeError(error, locale)}</p>;
 
   return <div className="shell">
-    <header className="top">
-      <div className="brand"><img className="brand-logo" src="/inside-joke-logo.webp" alt="Inside Joke" /></div>
+    <header className={session && game ? 'top' : 'top cover-top'}>
+      {session && game && <div className="brand"><img className="brand-logo" src="/inside-joke-logo.webp" alt="Inside Joke" /></div>}
       <div className="top-actions">
         <span className="pill">{t('tagline')}</span>
         <div className="language-switch" role="group" aria-label={locale === 'es' ? 'Idioma' : 'Language'}>
