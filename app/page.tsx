@@ -25,6 +25,7 @@ export default function Home() {
   const [game, setGame] = useState<Game | null>(null);
   const [name, setName] = useState('');
   const [roomCode, setRoomCode] = useState('');
+  const [invitedRoom, setInvitedRoom] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [locale, setLocale] = useState<Locale>('en');
@@ -56,8 +57,11 @@ export default function Home() {
       try { const s = JSON.parse(saved) as Session; if (s.code && s.token && s.me) setSavedSession(s); else localStorage.removeItem(storeKey); }
       catch { localStorage.removeItem(storeKey); }
     }
-    const code = new URLSearchParams(location.search).get('room');
-    if (code) setRoomCode(code.toUpperCase());
+    const code = new URLSearchParams(location.search).get('room')?.trim().toUpperCase() || '';
+    if (/^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{5}$/.test(code)) {
+      setRoomCode(code);
+      setInvitedRoom(code);
+    }
   }, [refresh]);
 
   useEffect(() => {
@@ -91,6 +95,7 @@ export default function Home() {
         const s = { code: d.code, token: d.token, me: d.me };
         setSession(s);
         setSavedSession(s);
+        setInvitedRoom('');
         localStorage.setItem(storeKey, JSON.stringify(s));
         history.replaceState(null, '', `/?room=${d.code}`);
       }
@@ -131,8 +136,9 @@ export default function Home() {
       </section>
       <div className="joinbox">
         <div className="form-kicker">{t('startPlaying')}</div>
-        <h2>{t('createOrJoin')}</h2>
-        {savedSession && <Button className="btn ghost resume-room" onClick={() => {
+        <h2>{invitedRoom ? t('invitedToRoom') : t('createOrJoin')}</h2>
+        {invitedRoom && <div className="invite-code">{invitedRoom}</div>}
+        {savedSession && !invitedRoom && <Button className="btn ghost resume-room" onClick={() => {
           setSession(savedSession);
           history.replaceState(null, '', `/?room=${savedSession.code}`);
           refresh(savedSession);
@@ -144,11 +150,16 @@ export default function Home() {
           <div className="avatar-choices">{AVATARS.map((choice, index) => <button key={choice} type="button" className={avatar === choice ? 'avatar-choice selected' : 'avatar-choice'} aria-pressed={avatar === choice} aria-label={`${t('avatar')} ${index + 1}: ${choice}`} onClick={() => chooseAvatar(choice)}>{choice}</button>)}</div>
         </fieldset>
         <label className="field" htmlFor="code">{t('roomCodeJoin')} <span className="small">{t('toJoin')}</span></label>
-        <Input id="code" className="input" maxLength={5} value={roomCode} onChange={e => setRoomCode(e.target.value.toUpperCase().replace(/[^A-Z2-9]/g, ''))} placeholder="ABCDE"/>
-        <div className="row">
-          <Button className="btn" disabled={busy || !name.trim()} onClick={() => act('create')}>{t('createRoom')}</Button>
-          <Button className="btn alt" disabled={busy || !name.trim() || roomCode.length !== 5} onClick={() => act('join')}>{t('joinRoom')}</Button>
-        </div>
+        <Input id="code" className="input" maxLength={5} value={roomCode} onChange={e => {
+          const nextCode = e.target.value.toUpperCase().replace(/[^A-Z2-9]/g, '');
+          setRoomCode(nextCode);
+          if (invitedRoom && nextCode !== invitedRoom) setInvitedRoom('');
+        }} placeholder="ABCDE"/>
+        {invitedRoom ? <Button className="btn invite-join" disabled={busy || !name.trim() || roomCode.length !== 5} onClick={() => act('join')}>{t('joinRoom')} {roomCode}</Button>
+          : <div className="row">
+            <Button className="btn" disabled={busy || !name.trim()} onClick={() => act('create')}>{t('createRoom')}</Button>
+            <Button className="btn alt" disabled={busy || !name.trim() || roomCode.length !== 5} onClick={() => act('join')}>{t('joinRoom')}</Button>
+          </div>}
         {showError}
         <p className="hint">{t('hostShares')}</p>
       </div>
@@ -159,10 +170,11 @@ export default function Home() {
           setSavedSession(session);
           setSession(null);
           setGame(null);
+          setInvitedRoom('');
           history.replaceState(null, '', '/');
         }}>{t('viewHome')}</Button><Button className="btn ghost" onClick={async () => {
           try {
-            await navigator.clipboard.writeText(`${location.origin}/?room=${game.code}`);
+            await navigator.clipboard.writeText(`${location.origin}/?room=${game.code}&v=${Date.now()}`);
             setCopied(true);
             setTimeout(() => setCopied(false), 2200);
           } catch {}
