@@ -8,7 +8,7 @@ import { AVATARS, DEFAULT_AVATAR } from '@/lib/avatars';
 
 type Player = { id: string; name: string; score: number; avatar?: string };
 type Game = {
-  code: string; host: string; players: Player[]; phase: string; round: number; roundsPerPlayer: number; total: number;
+  code: string; host: string; players: Player[]; phase: string; round: number; total: number;
   spotlight: string; question: { q: string; a: string[] }; answer: number | null;
   hasAnswered: boolean; guessed: string[]; myGuess: number | null; earned: Record<string, number>;
   winner: string | null; chosen: string | null; miniKind: string | null;
@@ -178,11 +178,10 @@ export default function Home() {
             <p>{t('shareCode')} <strong>{game.code}</strong>. {t('needTwo')}</p>
             <div className="notice">{game.players.length} {t('of')} 8 {t('joined')}</div>
             <div className="round-settings">
-              <div className="field">{t('roundsPerPlayer')}</div>
-              {session.me === game.host ? <div className="round-choices" role="group" aria-label={t('roundsPerPlayer')}>
-                {[1, 2, 3, 4].map(count => <button key={count} type="button" className={game.roundsPerPlayer === count ? 'round-choice selected' : 'round-choice'} aria-pressed={game.roundsPerPlayer === count} disabled={busy} onClick={() => act('setRounds', { value: count })}>{count}</button>)}
-              </div> : <strong>{game.roundsPerPlayer}</strong>}
-              <p className="small">{t('totalRounds')}: {game.total}</p>
+              <label className="field" htmlFor={session.me === game.host ? 'total-rounds' : undefined}>{t('totalRounds')}</label>
+              {session.me === game.host ? <select id="total-rounds" className="round-select" value={game.total} disabled={busy} onChange={e => act('setRounds', { value: Number(e.target.value) })}>
+                {Array.from({ length: 20 }, (_, i) => i + 1).map(count => <option key={count} value={count}>{count}</option>)}
+              </select> : <strong>{game.total}</strong>}
             </div>
             {session.me === game.host ? <Button className="btn" disabled={busy || game.players.length < 2} onClick={() => act('start')}>{t('startGame')}</Button> : <p>{t('waitHost')}</p>}
           </>}
@@ -247,7 +246,7 @@ export default function Home() {
               <p className="victory-message">{finalWinners.length === 1 ? t('congratulations') : t('congratulationsTie')}</p>
               <h2 className="winner">{locale === 'es' ? '¡' : ''}{finalWinners.map(p => p.name).join(' & ')} {finalWinners.length === 1 ? t('wins') : t('tie')}</h2>
             </div>
-            <p>{t('everyonePlayed')}</p>
+            <p>{t('roundsPlayed')}: {game.total}</p>
             <Button className="btn alt" onClick={() => { localStorage.removeItem(storeKey); setSession(null); setSavedSession(null); setGame(null); history.replaceState(null, '', '/'); }}>{t('newRoom')}</Button>
           </>}
           {showError}
