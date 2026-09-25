@@ -163,3 +163,8 @@ body{background:radial-gradient(ellipse 38rem 28rem at 5% 0%,#fb4fa026,transpare
   .stage .role-label{margin-top:22px}
 }
 @media(prefers-reduced-motion:reduce){.option,.btn,.avatar-choice,.entry-mode,.tile{transition:none!important}}
+.stage>.stage-sticker{position:absolute;top:23px;right:28px;z-index:1;display:grid;place-items:center;width:76px;height:76px;border:1px solid #ffffff39;border-radius:23px;background:linear-gradient(140deg,#ff5cac39,#7af5ed20);font-size:2.6rem;line-height:1;transform:rotate(9deg);box-shadow:0 12px 28px #07041c77;animation:sticker-pop .55s cubic-bezier(.2,1.6,.4,1) both}
+.phase-finished .stage-sticker{background:linear-gradient(140deg,#f8c66163,#ff5cac4d)}
+@keyframes sticker-pop{from{opacity:0;transform:scale(.7) rotate(-10deg)}to{opacity:1;transform:scale(1) rotate(9deg)}}
+@media(max-width:760px){.stage>.stage-sticker{top:20px;right:20px;width:54px;height:54px;border-radius:17px;font-size:1.9rem}.stage .status{max-width:calc(100% - 70px)}}
+@media(prefers-reduced-motion:reduce){.stage-sticker{animation:none}}
