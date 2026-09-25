@@ -76,6 +76,11 @@
 .avatar-choice.selected{border:2px solid #7af5ed;background:#284859;box-shadow:0 0 0 2px #7af5ed28}
 .avatar.emoji{font-size:1.25rem;line-height:1;background:#5a3d78}
 .role-label{display:flex;align-items:center;gap:10px}
+.victory{margin:24px 0;padding:26px 20px;border:1px solid #7af5ed8c;border-radius:22px;background:radial-gradient(circle at 50% 0,#7af5ed28,transparent 75%),#302445;text-align:center}
+.victory-avatars{display:flex;justify-content:center;flex-wrap:wrap;gap:12px}
+.victory-avatar{display:grid;place-items:center;width:clamp(96px,27vw,136px);height:clamp(96px,27vw,136px);border:3px solid #7af5ed;border-radius:32px;background:#5a3d78;box-shadow:0 0 30px #7af5ed55;font-size:clamp(3.3rem,14vw,5.2rem);line-height:1}
+.stage .victory-message{margin:18px 0 4px;color:#fffaff;font-size:clamp(1.2rem,4vw,1.55rem);font-weight:900}
+.victory .winner{margin:0}
 @media(max-width:420px){
   .avatar-choices{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
   .avatar-choice{min-height:49px;font-size:1.55rem}
