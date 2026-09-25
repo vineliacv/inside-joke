@@ -42,6 +42,7 @@ export default function Home() {
   const [avatar, setAvatar] = useState<string>(DEFAULT_AVATAR);
   const [copied, setCopied] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
+  const [codeShareFeedback, setCodeShareFeedback] = useState(false);
   const [shareFeedback, setShareFeedback] = useState<'game' | 'victory' | null>(null);
   const [clockOffset, setClockOffset] = useState(0);
   const [now, setNow] = useState(() => Date.now());
@@ -195,6 +196,24 @@ export default function Home() {
     }
     await copyShare(kind);
   }
+  async function shareRoomCode() {
+    if (!game) return;
+    const link = `${location.origin}/?room=${game.code}`;
+    const message = `${t('roomInviteText')} ${game.code}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: 'Inside Joke', text: message, url: link });
+        return;
+      } catch (e) {
+        if (e instanceof DOMException && e.name === 'AbortError') return;
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(`${message}\n${link}`);
+      setCodeShareFeedback(true);
+      setTimeout(() => setCodeShareFeedback(false), 2500);
+    } catch { setError('Please try again'); }
+  }
   function openSocial(network: 'whatsapp' | 'facebook') {
     const message = victoryMessage();
     const url = network === 'whatsapp'
@@ -274,7 +293,7 @@ export default function Home() {
           setInvitedRoom('');
           setEntryMode('create');
           history.replaceState(null, '', '/');
-        }}>{t('viewHome')}</Button><Button className="btn ghost" onClick={async () => {
+        }}>{t('viewHome')}</Button><Button className="btn" onClick={shareRoomCode}>{codeShareFeedback ? t('roomInviteCopied') : t('shareRoomCode')}</Button><Button className="btn ghost" onClick={async () => {
           try {
             await navigator.clipboard.writeText(game.code);
             setCopiedCode(true);
