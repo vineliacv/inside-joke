@@ -86,6 +86,16 @@ export default function Home() {
   }
 
   async function act(action: string, extra: Record<string, unknown> = {}) {
+    if ((action === 'create' || action === 'join') && !name.trim()) {
+      setError('Enter your name');
+      document.getElementById('name')?.focus();
+      return;
+    }
+    if (action === 'join' && roomCode.length !== 5) {
+      setError('Enter a five-character code');
+      document.getElementById('code')?.focus();
+      return;
+    }
     setBusy(true); setError('');
     try {
       const r = await fetch('/api/game', {
@@ -140,8 +150,8 @@ export default function Home() {
       <div className="joinbox">
         <div className="form-kicker">{t('startPlaying')}</div>
         {!invitedRoom && <div className="entry-modes" role="group" aria-label={t('entryMethod')}>
-          <button type="button" className={entryMode === 'create' ? 'entry-mode selected' : 'entry-mode'} aria-pressed={entryMode === 'create'} onClick={() => { setEntryMode('create'); setError(''); }}>{t('createRoom')}</button>
-          <button type="button" className={entryMode === 'join' ? 'entry-mode selected' : 'entry-mode'} aria-pressed={entryMode === 'join'} onClick={() => { setEntryMode('join'); setError(''); }}>{t('joinWithCode')}</button>
+          <button type="button" className={entryMode === 'create' ? 'entry-mode selected' : 'entry-mode'} aria-pressed={entryMode === 'create'} onClick={() => { setEntryMode('create'); setError(''); }}>{t('hostMode')}</button>
+          <button type="button" className={entryMode === 'join' ? 'entry-mode selected' : 'entry-mode'} aria-pressed={entryMode === 'join'} onClick={() => { setEntryMode('join'); setError(''); }}>{t('joinMode')}</button>
         </div>}
         <h2>{invitedRoom ? t('invitedToRoom') : entryMode === 'join' ? t('joinWithCode') : t('createRoom')}</h2>
         {invitedRoom && <div className="invite-code">{invitedRoom}</div>}
@@ -162,8 +172,8 @@ export default function Home() {
           setRoomCode(nextCode);
           if (invitedRoom && nextCode !== invitedRoom) setInvitedRoom('');
         }} placeholder="ABCDE"/></>}
-        {entryMode === 'join' ? <Button className="btn invite-join" disabled={busy || !name.trim() || roomCode.length !== 5} onClick={() => act('join')}>{t('joinRoom')}{roomCode.length === 5 ? ` ${roomCode}` : ''}</Button>
-          : <Button className="btn invite-join" disabled={busy || !name.trim()} onClick={() => act('create')}>{t('createRoom')}</Button>}
+        {entryMode === 'join' ? <Button className="btn invite-join" disabled={busy} onClick={() => act('join')}>{t('joinRoom')}{roomCode.length === 5 ? ` ${roomCode}` : ''}</Button>
+          : <Button className="btn invite-join" disabled={busy} onClick={() => act('create')}>{t('createRoom')}</Button>}
         {showError}
         <p className="hint">{entryMode === 'join' ? t('joinHint') : t('hostShares')}</p>
       </div>
