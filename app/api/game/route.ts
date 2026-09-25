@@ -21,11 +21,13 @@ const QUESTIONS=[
   ...moreQuestions.map(({en}) => en),
 ];
 const uid=()=>crypto.randomUUID();
+const BONUS_ANSWER_MS=30000;
 const code=()=>Array.from(crypto.getRandomValues(new Uint8Array(5))).map(x=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[x%32]).join('');
 const db=()=>{if(!env.DB)throw new Error('Room storage unavailable');return env.DB};
 const roundLimit=(g:Game)=>g.totalRounds??(g.phase==='lobby'?g.roundsPerPlayer??2:g.players.length*(g.roundsPerPlayer??2));
+const bonusExpired=(g:Game,now=Date.now())=>g.phase==='mini'&&now>=(g.miniStartAt??0)+BONUS_ANSWER_MS;
 const publicBonus=(g:Game)=>{if(g.phase!=='mini')return null;const challenge=bonusChallenges[g.miniQuestion??(g.miniKind==='object'?14:0)];return challenge.kind==='quiz'?{kind:challenge.kind,prompt:challenge.prompt,answers:challenge.answers}:{kind:challenge.kind,prompt:challenge.prompt,target:challenge.target,fillers:challenge.fillers}};
-const response=(g:Game,id:string)=>({code:g.code,host:g.host,players:g.players.map(({id,name,score,avatar})=>({id,name,score,avatar:avatar??DEFAULT_AVATAR})),phase:g.phase,round:g.round,total:roundLimit(g),spotlight:g.players[g.round%g.players.length]?.id,question:QUESTIONS[g.question],answer:g.phase==='reveal'||g.phase==='choice'||g.phase==='mini'||g.phase==='finished'?g.answer:null,hasAnswered:g.answer!==null,guessed:Object.keys(g.guesses),myGuess:g.guesses[id]??null,earned:g.earned,winner:g.winner,chosen:g.chosen,miniKind:g.miniKind,miniIndex:g.phase==='mini'?g.miniIndex:null,miniChallenge:publicBonus(g),miniOptionsOrder:g.miniOptionsOrder??[0,1,2,3],miniStartAt:g.miniStartAt??0,miniAnswered:Object.keys(g.miniAnswers??{}),miniWinner:g.miniWinner??null,miniDone:g.miniDone,serverTime:Date.now()});
+const response=(g:Game,id:string)=>({code:g.code,host:g.host,players:g.players.map(({id,name,score,avatar})=>({id,name,score,avatar:avatar??DEFAULT_AVATAR})),phase:g.phase,round:g.round,total:roundLimit(g),spotlight:g.players[g.round%g.players.length]?.id,question:QUESTIONS[g.question],answer:g.phase==='reveal'||g.phase==='choice'||g.phase==='mini'||g.phase==='finished'?g.answer:null,hasAnswered:g.answer!==null,guessed:Object.keys(g.guesses),myGuess:g.guesses[id]??null,earned:g.earned,winner:g.winner,chosen:g.chosen,miniKind:g.miniKind,miniIndex:g.phase==='mini'?g.miniIndex:null,miniChallenge:publicBonus(g),miniOptionsOrder:g.miniOptionsOrder??[0,1,2,3],miniStartAt:g.miniStartAt??0,miniEndAt:(g.miniStartAt??0)+BONUS_ANSWER_MS,miniAnswered:Object.keys(g.miniAnswers??{}),miniWinner:g.miniWinner??null,miniDone:g.miniDone||bonusExpired(g),serverTime:Date.now()});
 const fail=(message:string,status=400)=>Response.json({error:message},{status});
 const load=async(c:string)=>{const row=await db().prepare('SELECT state,version FROM rooms WHERE code = ?').bind(c).first<{state:string;version:number}>();return row?{g:JSON.parse(row.state) as Game,version:row.version}:null};
 export async function GET(req:Request){try{const u=new URL(req.url),c=(u.searchParams.get('code')||'').toUpperCase(),t=u.searchParams.get('token');const r=await load(c);if(!r)return fail('Room not found',404);const p=r.g.players.find(p=>p.token===t);if(!p)return fail('Your session is no longer in this room',403);return Response.json({game:response(r.g,p.id),me:p.id})}catch(e){console.error(e);return fail('Could not load the room',500)}}
@@ -43,7 +45,7 @@ else if(action==='choose'){if(g.phase!=='choice'||p.id!==g.chosen)return fail('I
 }else return fail('Choose a round')}
 else if(action==='miniAnswer'){
   if(g.phase!=='mini')return fail('Wait for the bonus challenge');
-  if(g.miniDone||g.miniAnswers?.[p.id]!==undefined)return Response.json({code:c,token:p.token,me:p.id,game:response(g,p.id)});
+  if(g.miniDone||bonusExpired(g)||g.miniAnswers?.[p.id]!==undefined)return Response.json({code:c,token:p.token,me:p.id,game:response(g,p.id)});
   if(Date.now()<(g.miniStartAt??0))return fail('The bonus challenge has not started yet');
   const value=Number(b.value),challenge=bonusChallenges[g.miniQuestion??(g.miniKind==='object'?14:0)];
   if(!Number.isInteger(value)||value<0||value>=(challenge.kind==='quiz'?4:25))return fail('Choose an answer');
@@ -52,7 +54,7 @@ else if(action==='miniAnswer'){
   if(right){g.miniWinner=p.id;g.miniDone=true;p.score+=1;g.earned[p.id]=(g.earned[p.id]||0)+1}
   else if(Object.keys(g.miniAnswers).length===g.players.length)g.miniDone=true;
 }
-else if(action==='miniNext'){if(g.phase!=='mini'||!g.miniDone)return fail('Finish the mini-game first');next(g)}
+else if(action==='miniNext'){if(g.phase!=='mini'||!(g.miniDone||bonusExpired(g)))return fail('Finish the mini-game first');next(g)}
 else return fail('Unknown action')}
 const updated=await db().prepare('UPDATE rooms SET state=?,version=version+1,updated_at=? WHERE code=? AND version=?').bind(JSON.stringify(g),Date.now(),c,row.version).run();if(updated.meta.changes===1)return Response.json({code:c,token:p?.token,me:p?.id,game:response(g,p!.id)})}
 return fail('Room is busy, please retry',409)}catch(e){console.error(e);return fail('Something went wrong. Please try again.',500)}}
