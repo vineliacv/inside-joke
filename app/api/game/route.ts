@@ -39,6 +39,6 @@ else if(action==='choose'){if(g.phase!=='choice'||p.id!==g.chosen)return fail('I
 else if(action==='miniAnswer'){if(g.phase!=='mini'||p.id!==g.chosen||g.miniDone)return fail('Wait for your mini-game');const right=g.miniKind==='puzzle'?Number(b.value)===2:Number(b.value)===g.miniIndex;g.miniDone=true;if(right){p.score+=2;g.earned[p.id]=(g.earned[p.id]||0)+2}}
 else if(action==='miniNext'){if(g.phase!=='mini'||!g.miniDone)return fail('Finish the mini-game first');next(g)}
 else return fail('Unknown action')}
-const updated=await db().prepare('UPDATE rooms SET state=?,version=version+1,updated_at=? WHERE code=? AND version=?').bind(JSON.stringify(g),Date.now(),c,row.version).run();if(updated.meta.changes===1)return Response.json({code:c,token:p?.token,me:p?.id,game:response(g,p!.id)});if(action==='join')return fail('Someone joined at the same time. Try again.')}
+const updated=await db().prepare('UPDATE rooms SET state=?,version=version+1,updated_at=? WHERE code=? AND version=?').bind(JSON.stringify(g),Date.now(),c,row.version).run();if(updated.meta.changes===1)return Response.json({code:c,token:p?.token,me:p?.id,game:response(g,p!.id)})}
 return fail('Room is busy, please retry',409)}catch(e){console.error(e);return fail('Something went wrong. Please try again.',500)}}
 function next(g:Game){g.round++;if(g.round>=roundLimit(g)){g.phase='finished';return}g.question=g.questionOrder?.[g.round]??g.round%QUESTIONS.length;g.answer=null;g.guesses={};g.earned={};g.winner=null;g.chosen=null;g.miniKind=null;g.miniDone=false;g.phase='answer'}
